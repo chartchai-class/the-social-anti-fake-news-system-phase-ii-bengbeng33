@@ -11,5 +11,4 @@ public interface NewsDao {
     News save(News news);
     void deleteNews(Long id);
     News updateNews(News news);
-
 }

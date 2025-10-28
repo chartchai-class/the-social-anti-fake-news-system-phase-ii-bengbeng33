@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/news")
+@RequestMapping("/news")
 @RequiredArgsConstructor
 public class NewsController {
     final NewsService newsService;
@@ -33,5 +33,4 @@ public class NewsController {
     public ResponseEntity<List<NewsDTO>> getNewsByStatus(@PathVariable NewsStatus status) {
         return ResponseEntity.ok(newsService.getNewsByStatus(status));
     }
-
 }
