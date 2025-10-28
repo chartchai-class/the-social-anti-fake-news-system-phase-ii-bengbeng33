@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
-import * as api from "@/api/api";
+import NewsService from "@/services/NewsService";
+import CommentService from "@/services/CommentService";
+import VoteService from "@/services/VoteService";
 
 type Status = "FAKE" | "NOT_FAKE" | null;
 
@@ -63,7 +65,7 @@ export const useNewsStore = defineStore("news", {
     getNewsById:
       (state) =>
       (id: string | number): NewsItem | undefined => {
-        const idNum = parseInt(id.toString());
+        const idNum = Number.parseInt(id.toString());
         return state.allNews.find((news) => news.id === idNum);
       },
 
@@ -73,9 +75,10 @@ export const useNewsStore = defineStore("news", {
       async (
         newsId: string | number
       ): Promise<{ fake: number; notFake: number }> => {
-        const id = parseInt(newsId.toString());
+        const id = Number.parseInt(newsId.toString());
         try {
-          return await api.getVoteCounts(id);
+          const { data } = await VoteService.getVoteCounts(id);
+          return { fake: data.fake, notFake: data.notFake };
         } catch (error) {
           console.error("Error fetching vote counts:", error);
           return { fake: 0, notFake: 0 };
@@ -86,7 +89,7 @@ export const useNewsStore = defineStore("news", {
     hasUserVoted:
       (state) =>
       (newsId: string | number): boolean => {
-        const id = parseInt(newsId.toString());
+        const id = Number.parseInt(newsId.toString());
         return state.userVotes.has(id);
       },
 
@@ -94,12 +97,12 @@ export const useNewsStore = defineStore("news", {
     getComments:
       (state) =>
       async (newsId: string | number): Promise<Comment[]> => {
-        const id = parseInt(newsId.toString());
+        const id = Number.parseInt(newsId.toString());
         if (state.commentsCache.has(id)) {
           return state.commentsCache.get(id) || [];
         }
         try {
-          const comments = await api.getComments(id);
+          const { data: comments } = await CommentService.getComments(id);
           state.commentsCache.set(id, comments);
           return comments;
         } catch (error) {
@@ -112,7 +115,7 @@ export const useNewsStore = defineStore("news", {
     getCurrentStatus:
       (state) =>
       (newsId: string | number): Status => {
-        const id = parseInt(newsId.toString());
+        const id = Number.parseInt(newsId.toString());
         const news = state.allNews.find((n) => n.id === id);
         return news?.status || null;
       },
@@ -139,8 +142,8 @@ export const useNewsStore = defineStore("news", {
     async fetchAllNews() {
       this.isLoading = true;
       try {
-        const news = await api.getAllNews();
-        this.allNews = news;
+        const { data } = await NewsService.getAllNews();
+        this.allNews = data;
       } catch (error) {
         console.error("Error fetching news:", error);
       } finally {
@@ -150,9 +153,9 @@ export const useNewsStore = defineStore("news", {
 
     // Fetch news by ID from API
     async fetchNewsById(id: string | number) {
-      const idNum = parseInt(id.toString());
+      const idNum = Number.parseInt(id.toString());
       try {
-        const news = await api.getNewsById(idNum);
+        const { data: news } = await NewsService.getNewsById(idNum);
         const index = this.allNews.findIndex((n) => n.id === news.id);
         if (index >= 0) {
           this.allNews[index] = news;
@@ -169,7 +172,7 @@ export const useNewsStore = defineStore("news", {
     // Add new news item
     async addNews(newsData: NewNewsData) {
       try {
-        const newNews = await api.createNews(newsData);
+        const { data: newNews } = await NewsService.createNews(newsData as any);
         this.allNews.unshift(newNews);
         return newNews;
       } catch (error) {
@@ -183,7 +186,7 @@ export const useNewsStore = defineStore("news", {
       newsId: string | number,
       voteType: Status
     ): Promise<boolean> {
-      const id = parseInt(newsId.toString());
+      const id = Number.parseInt(newsId.toString());
 
       // Check if user already voted
       if (this.userVotes.has(id)) {
@@ -192,7 +195,7 @@ export const useNewsStore = defineStore("news", {
       }
 
       try {
-        await api.createVote(id, voteType as "FAKE" | "NOT_FAKE");
+        await VoteService.createVote(id, voteType as "FAKE" | "NOT_FAKE");
         this.userVotes.add(id);
 
         // Refresh the news item to get updated vote counts
@@ -210,10 +213,10 @@ export const useNewsStore = defineStore("news", {
       newsId: string | number,
       commentData: CommentData
     ): Promise<Comment> {
-      const id = parseInt(newsId.toString());
+      const id = Number.parseInt(newsId.toString());
 
       try {
-        const newComment = await api.createComment(id, commentData);
+        const { data: newComment } = await CommentService.createComment(id, commentData);
 
         // Update cache
         const comments = this.commentsCache.get(id) || [];
