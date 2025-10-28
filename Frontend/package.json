@@ -18,6 +18,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "axios": "^1.7.7",
     "@tailwindcss/line-clamp": "^0.4.4",
     "pinia": "^3.0.3",
     "vue": "^3.5.18",
