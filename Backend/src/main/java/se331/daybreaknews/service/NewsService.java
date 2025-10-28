@@ -1,0 +1,14 @@
+package se331.daybreaknews.service;
+
+import se331.daybreaknews.dto.NewsDTO;
+import se331.daybreaknews.entity.NewsStatus;
+import java.util.List;
+
+public interface NewsService {
+    List<NewsDTO> getAllNews();
+    NewsDTO getNewsById(Long id);
+    List<NewsDTO> getNewsByStatus(NewsStatus status);
+    NewsDTO createNews(NewsDTO dto);
+    NewsDTO updateNews(Long id, NewsDTO dto);
+    void deleteNews(Long id);
+}
