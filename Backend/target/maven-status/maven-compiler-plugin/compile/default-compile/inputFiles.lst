@@ -5,8 +5,10 @@ C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-be
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\dao\VoteDaoDbImpl.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\service\CommentServiceImpl.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\repository\CommentRepository.java
+C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\service\SupabaseStorageService.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\AntiFakeNewsApplication.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\controller\VoteController.java
+C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\config\SupabaseConfig.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\dao\NewsDaoDbImpl.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\dao\CommentDao.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\entity\Comment.java
@@ -21,6 +23,7 @@ C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-be
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\repository\VoteRepository.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\entity\NewsStatus.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\dto\VoteDTO.java
+C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\controller\FileUploadController.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\service\VoteService.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\dto\NewsDTO.java
 C:\Users\HP User\Desktop\Assignment\the-social-anti-fake-news-system-phase-ii-bengbeng33\Backend\src\main\java\se331\daybreaknews\controller\NewsController.java

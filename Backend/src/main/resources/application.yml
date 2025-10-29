@@ -9,6 +9,7 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: password
+    
 
   jpa:
     properties:
@@ -19,10 +20,16 @@ spring:
   
   h2:
     console:
-      enabled: true
+      enabled: true 
   servlet:
     multipart:
       max-file-size: 10MB
+
+supabase:
+  url: https://gdvmhaboyscqbpiwggrn.supabase.co
+  anon-key: ${SUPABASE_ANON_KEY}
+  service-key: ${SUPABASE_SERVICE_KEY}
+  bucket-name: ${SUPABASE_BUCKET_NAME:news-images}
 
 server:
   port: 8080
