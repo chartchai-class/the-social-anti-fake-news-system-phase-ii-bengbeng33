@@ -71,6 +71,21 @@
                   Fake
                 </router-link>
                 <div class="border-t border-gray-200 my-2"></div>
+                <router-link
+                  to="/login"
+                  class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
+                  @click="closeDropdown"
+                >
+                  Log In
+                </router-link>
+                <router-link
+                  to="/register"
+                  class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
+                  @click="closeDropdown"
+                >
+                  Register
+                </router-link>
+                <div class="border-t border-gray-200 my-2"></div>
                 <!-- PaginationControl - Direct display -->
                 <div v-if="$route.path === '/' || $route.path === '/fact' || $route.path === '/fake'" class="px-4 py-2">
                   <PaginationControl
@@ -119,6 +134,31 @@
               ]"
             >
               Fake
+            </router-link>
+          </div>
+          <!-- Auth Links -->
+          <div class="flex space-x-3 ml-4">
+            <router-link 
+              to="/login"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
+                $route.path === '/login' 
+                  ? 'bg-white text-orange-700' 
+                  : 'text-white hover:text-orange-200 hover:bg-orange-600'
+              ]"
+            >
+              Log In
+            </router-link>
+            <router-link 
+              to="/register"
+              :class="[
+                'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
+                $route.path === '/register' 
+                  ? 'bg-white text-orange-700' 
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              ]"
+            >
+              Register
             </router-link>
           </div>
           <!-- Pagination Control - Only show on home page and fact/fake pages -->
