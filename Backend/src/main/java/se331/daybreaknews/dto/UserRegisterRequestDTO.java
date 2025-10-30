@@ -8,5 +8,6 @@ public class UserRegisterRequestDTO {
     private String surname;
     private String email;
     private String password;
+    private String profileImagePath; // optional: public URL or path
 }
 

@@ -21,7 +21,7 @@ public class FileUploadController {
     private final SupabaseStorageService supabaseStorageService;
 
     @PostMapping("/image")
-    @PreAuthorize("hasAnyRole('MEMBER','ADMIN')")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, String>> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "images") String folder) {

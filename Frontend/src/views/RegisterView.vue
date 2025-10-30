@@ -124,6 +124,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AuthService from '@/services/AuthService';
+import apiClient from '@/services/apiClient';
 import type { AxiosError } from 'axios';
 
 const router = useRouter();
@@ -171,11 +172,24 @@ async function handleRegister() {
   errorMessage.value = '';
 
   try {
+    let profileImagePath: string | undefined = undefined;
+    if (profileFile.value) {
+      const formData = new FormData();
+      formData.append('file', profileFile.value);
+      formData.append('folder', 'profile-images');
+      const { data: uploadResp } = await apiClient.post<{ url: string }>(
+        '/api/upload/image',
+        formData
+      );
+      profileImagePath = uploadResp.url;
+    }
+
     const { data } = await AuthService.register({
       name: form.value.name,
       surname: form.value.surname,
       email: form.value.email,
       password: form.value.password,
+      profileImagePath,
     });
 
     localStorage.setItem('user', JSON.stringify(data.user));
