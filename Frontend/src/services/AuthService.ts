@@ -1,22 +1,12 @@
-import axios from "axios";
 import type { User } from "@/types";
-
-const BASE_URL = `${import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080"}/api`;
-
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: false,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-});
+import apiClient from "@/services/apiClient";
 
 export interface RegisterPayload {
   name: string;
   surname: string;
   email: string;
   password: string;
+  profileImagePath?: string;
 }
 
 export interface LoginPayload {
@@ -24,13 +14,18 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+}
+
 export default {
   async register(payload: RegisterPayload) {
-    return apiClient.post<User>("/auth/register", payload);
+    return apiClient.post<AuthResponse>("/api/v1/auth/register", payload);
   },
 
   async login(payload: LoginPayload) {
-    return apiClient.post<User>("/auth/login", payload);
+    return apiClient.post<AuthResponse>("/api/v1/auth/authenticate", payload);
   },
 };
-

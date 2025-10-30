@@ -7,6 +7,9 @@ import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
 import se331.daybreaknews.entity.VoteType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,17 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional(readOnly = true)
     public List<NewsDTO> getAllNews() {
+        boolean includeHidden = currentUserIsAdmin();
+        return newsDao.findAllByOrderByReportedAtDesc()
+                .stream()
+                .filter(news -> includeHidden || news.isVisible())
+                .map(this::enrichWithVotes)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NewsDTO> getAllNewsIncludingHidden() {
         return newsDao.findAllByOrderByReportedAtDesc()
                 .stream()
                 .map(this::enrichWithVotes)
@@ -33,8 +47,46 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional(readOnly = true)
     public List<NewsDTO> getNewsByStatus(NewsStatus status) {
+        boolean includeHidden = currentUserIsAdmin();
         return newsDao.findByStatus(status)
                 .stream()
+                .filter(news -> includeHidden || news.isVisible())
+                .map(this::enrichWithVotes)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NewsDTO> searchNews(String query) {
+        String q = query == null ? "" : query.trim();
+        if (q.isEmpty()) {
+            return getAllNews();
+        }
+
+        // Search title/content first
+        List<News> results = newsDao
+                .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(q, q);
+
+        // If query equals a status word, include status results as well
+        NewsStatus status = null;
+        for (NewsStatus s : NewsStatus.values()) {
+            if (s.name().equalsIgnoreCase(q)) {
+                status = s;
+                break;
+            }
+        }
+        if (status != null) {
+            List<News> byStatus = newsDao.findByStatus(status);
+            for (News n : byStatus) {
+                if (results.stream().noneMatch(x -> x.getId().equals(n.getId()))) {
+                    results.add(n);
+                }
+            }
+        }
+
+        boolean includeHidden = currentUserIsAdmin();
+        return results.stream()
+                .filter(news -> includeHidden || news.isVisible())
                 .map(this::enrichWithVotes)
                 .collect(Collectors.toList());
     }
@@ -43,7 +95,7 @@ public class NewsServiceImpl implements NewsService {
     @Transactional(readOnly = true)
     public NewsDTO getNewsById(Long id) {
         News news = newsDao.getNews(id);
-        if (news == null) {
+        if (news == null || (!news.isVisible() && !currentUserIsAdmin())) {
             throw new RuntimeException("News not found with id: " + id);
         }
         return enrichWithVotes(news);
@@ -59,6 +111,7 @@ public class NewsServiceImpl implements NewsService {
         news.setImageUrl(dto.getImageUrl());
         news.setStatus(NewsStatus.UNVERIFIED);
         news.setReportedAt(LocalDateTime.now());
+        news.setVisible(true);
         
         if (dto.getSummary() == null || dto.getSummary().isEmpty()) {
             news.setSummary(dto.getContent().length() > 100 ? 
@@ -67,6 +120,18 @@ public class NewsServiceImpl implements NewsService {
             news.setSummary(dto.getSummary());
         }
         
+        News saved = newsDao.save(news);
+        return enrichWithVotes(saved);
+    }
+
+    @Override
+    @Transactional
+    public NewsDTO updateVisibility(Long id, boolean visible) {
+        News news = newsDao.getNews(id);
+        if (news == null) {
+            throw new RuntimeException("News not found with id: " + id);
+        }
+        news.setVisible(visible);
         News saved = newsDao.save(news);
         return enrichWithVotes(saved);
     }
@@ -107,7 +172,7 @@ public class NewsServiceImpl implements NewsService {
         dto.setSummary(news.getSummary());
         dto.setContent(news.getContent());
         long fakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FAKE);
-        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.NOT_FAKE);
+        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FACT);
 
         dto.setStatus(resolveStatus(news, fakeVotes, notFakeVotes));
         dto.setReporter(news.getReporter());
@@ -115,6 +180,7 @@ public class NewsServiceImpl implements NewsService {
         dto.setImageUrl(news.getImageUrl());
         dto.setFakeVotes(fakeVotes);
         dto.setNotFakeVotes(notFakeVotes);
+        dto.setVisible(news.isVisible());
         
         return dto;
     }
@@ -127,8 +193,20 @@ public class NewsServiceImpl implements NewsService {
             return NewsStatus.FAKE;
         }
         if (notFakeVotes > fakeVotes) {
-            return NewsStatus.NOT_FAKE;
+            return NewsStatus.FACT;
         }
         return NewsStatus.UNVERIFIED;
+    }
+
+    private boolean currentUserIsAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
     }
 }

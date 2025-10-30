@@ -75,19 +75,5 @@ public class FileUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-    @DeleteMapping
-    public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("url") String fileUrl) {
-        try {
-            supabaseStorageService.deleteFile(fileUrl);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "File deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to delete file: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
 }
 

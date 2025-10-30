@@ -8,4 +8,6 @@ public interface CommentService {
     List<CommentDTO> getCommentsByNewsId(Long newsId);
     CommentDTO createComment(CommentDTO dto);
     void deleteComment(Long id);
+    List<CommentDTO> getAllCommentsForAdmin();
+    CommentDTO updateVisibility(Long id, boolean visible);
 }

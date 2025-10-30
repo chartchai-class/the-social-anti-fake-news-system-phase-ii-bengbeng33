@@ -103,7 +103,9 @@ async function handleLogin() {
       password: form.value.password,
     });
 
-    localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem('user', JSON.stringify(data.user));
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
     window.dispatchEvent(new Event('auth-changed'));
 
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';

@@ -26,6 +26,17 @@ supabase:
   anon-key: ${SUPABASE_ANON_KEY}
   service-key: ${SUPABASE_SERVICE_KEY}
   bucket-name: ${SUPABASE_BUCKET_NAME:news-images}
+  storage:
+    bucket: ${SUPABASE_BUCKET_NAME:news-images}
+    endpoint_output: https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public
+
+application:
+  security:
+    jwt:
+      secret-key: 9aGjT630/amFgq6Cr8nT0Nmv+fM+4tCQZQnFhAPztGTg5Uu/IzQuwA/42wfhUkV/5a/Jshyj+jJ+XAmtUqf+Aw==
+      expiration: 86400000
+      refresh-token:
+        expiration: 604800000
 
 server:
   port: 8080

@@ -1,12 +1,15 @@
 package se331.daybreaknews.service;
 
+import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import se331.daybreaknews.config.SupabaseConfig;
+import se331.daybreaknews.dto.StorageFileDTO;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -16,6 +19,15 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class SupabaseStorageService {
+
+    @Value("${supabase.storage.bucket}")
+    String bucketName;
+
+    @Value("${supabase.storage.endpoint_output}")
+    String outputUrl;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddmmssSSS");
+
     private final SupabaseConfig supabaseConfig;
     private final WebClient webClient;
 
@@ -26,6 +38,57 @@ public class SupabaseStorageService {
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseConfig.getServiceKey())
                 .defaultHeader("apikey", supabaseConfig.getServiceKey())
                 .build();
+    }
+
+    public String uploadFile(MultipartFile file) throws IOException {
+        String saltFileName = LocalDateTime.now().format(formatter) + "-" + file.getOriginalFilename();
+        
+        String uploadUrl = "/object/" + bucketName + "/" + saltFileName;
+        
+        byte[] fileBytes = file.getBytes();
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
+        }
+        
+        webClient.post()
+                .uri(uploadUrl)
+                .contentType(MediaType.parseMediaType(contentType))
+                .header("x-upsert", "true")
+                .bodyValue(fileBytes)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        
+        String url = String.format("%s/%s/%s", outputUrl, bucketName, saltFileName);
+        return url;
+    }
+
+    public StorageFileDTO uploadImage(MultipartFile file) throws ServletException, IOException {
+        String fileName = file.getOriginalFilename();
+
+        // 1. Check for valid file name/existence
+        if (fileName != null && !fileName.isEmpty() && fileName.contains(".")) {
+            final String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+            String[] allowedExt = {"jpg", "jpeg", "png", "gif"};
+
+            // 2. Check for allowed extensions
+            for (String s : allowedExt) {
+                if (extension.equals(s)) {
+                    // Return immediately upon successful check and upload
+                    String urlName = this.uploadFile(file);
+                    return StorageFileDTO.builder()
+                            .name(urlName)
+                            .build();
+                }
+            }
+
+            // 3. If the loop finishes without a return, the file type is invalid
+            throw new ServletException("File must be an image (jpg, jpeg, png, gif).");
+        }
+
+        // 4. If the file name is null or empty, or no file was provided in the request
+        throw new ServletException("Invalid file name or no file provided.");
     }
 
     public String uploadFile(MultipartFile file, String folder) throws IOException {

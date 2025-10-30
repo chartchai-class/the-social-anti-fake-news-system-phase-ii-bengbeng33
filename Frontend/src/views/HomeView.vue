@@ -30,7 +30,7 @@
     </div>
 
     <!-- Add News Button -->
-    <div class="px-4 sm:px-6 lg:px-8 mb-4">
+    <div v-if="canCreateNews" class="px-4 sm:px-6 lg:px-8 mb-4">
       <div class="flex justify-center">
         <button
           @click="showAddNewsModal = true"
@@ -92,17 +92,18 @@
             </p>
           </div>
 
-          <!-- Image URL -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Image URL (optional)</label
-            >
-            <input
-              v-model="newNews.imageUrl"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
+          <!-- Image Upload -->
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Upload image</label
+              >
+              <div class="flex items-center gap-4">
+                <input id="news-image-upload" type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); newsImageFile = f; newsImagePreview = f ? objectUrl(f) : null; }"
+                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <img v-if="newsImagePreview" :src="newsImagePreview" alt="preview" class="w-16 h-16 object-cover rounded" />
+              </div>
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
@@ -130,6 +131,24 @@
     </div>
 
     <div class="px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Simple Search Bar -->
+      <div class="max-w-4xl mx-auto mb-6">
+        <div class="flex gap-3 items-stretch">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by title, content, or type FAKE/FACT/UNVERIFIED"
+            class="flex-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            @keyup.enter="performSearch"
+          />
+          <button
+            @click="performSearch"
+            class="px-5 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+          >
+            Search
+          </button>
+        </div>
+      </div>
       <NewsBoxes :items="paginatedNews" />
       <div class="mt-6 flex justify-center">
         <PageNav v-model="currentPage" :total="totalPages" />
@@ -144,6 +163,7 @@ import NewsBoxes from "@/components/NewsBoxes.vue";
 import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
 import type { NewsItem, User } from "@/types";
+import apiClient from "@/services/apiClient";
 
 interface Props {
   itemsPerPage?: number;
@@ -168,8 +188,19 @@ const newNews = ref({
   description: "",
   imageUrl: "",
 });
+const canCreateNews = computed(() => {
+  const roles = currentUser.value?.roles ?? [];
+  return roles.includes("ADMIN") || roles.includes("MEMBER");
+});
 
-function loadCurrentUser(_event?: Event) {
+const newsImageFile = ref<File | null>(null);
+const newsImagePreview = ref<string | null>(null);
+
+function objectUrl(file: File): string {
+  return URL.createObjectURL(file);
+}
+
+function loadCurrentUser() {
   const raw = localStorage.getItem("user");
   if (!raw) {
     currentUser.value = null;
@@ -188,13 +219,13 @@ onMounted(async () => {
   loadCurrentUser();
   simulateLoading();
   await newsStore.fetchAllNews();
-  window.addEventListener("storage", loadCurrentUser);
-  window.addEventListener("auth-changed", loadCurrentUser);
+  globalThis.addEventListener("storage", loadCurrentUser);
+  globalThis.addEventListener("auth-changed", loadCurrentUser);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("storage", loadCurrentUser);
-  window.removeEventListener("auth-changed", loadCurrentUser);
+  globalThis.removeEventListener("storage", loadCurrentUser);
+  globalThis.removeEventListener("auth-changed", loadCurrentUser);
 });
 
 function simulateLoading() {
@@ -215,7 +246,7 @@ function simulateLoading() {
 }
 
 const allNews = computed((): NewsItem[] => {
-  return newsStore.getNewsWithCurrentVotes();
+  return newsStore.getNewsWithCurrentVotes;
 });
 
 const currentPage = ref(1);
@@ -241,6 +272,19 @@ const paginatedNews = computed((): NewsItem[] => {
   return allNews.value.slice(start, start + props.itemsPerPage);
 });
 
+// Search state
+const searchQuery = ref("");
+
+async function performSearch() {
+  currentPage.value = 1;
+  const q = searchQuery.value.trim();
+  if (!q) {
+    await newsStore.fetchAllNews();
+  } else {
+    await newsStore.searchNews(q);
+  }
+}
+
 async function addNews() {
   const reporterName = currentUser.value?.username;
 
@@ -263,12 +307,30 @@ async function addNews() {
     if (loadingProgress.value >= 100) {
       clearInterval(interval);
 
-      // Add news to store with null status (Unverified) and 0/0 votes
+      // If file selected, upload to backend first
+      let finalImageUrl: string | undefined = undefined;
+      try {
+        if (newsImageFile.value) {
+          const formData = new FormData();
+          formData.append("file", newsImageFile.value);
+          formData.append("folder", "news-images");
+          const { data } = await apiClient.post<{ url: string }>(
+            "/api/upload/image",
+            formData
+          );
+          finalImageUrl = data.url;
+        }
+      } catch (e) {
+        console.warn("Failed to upload news image, falling back to provided URL", e);
+      }
+
+      // Add news to store with null status (Unverified)
       await newsStore.addNews({
         title: newNews.value.topic,
         content: newNews.value.description,
         reporter: reporterName,
         imageUrl:
+          finalImageUrl ||
           newNews.value.imageUrl ||
           `https://picsum.photos/id/${Math.floor(Math.random() * 200) + 100}/800/400`,
         status: null, // Automatically set to Unverified
@@ -280,6 +342,8 @@ async function addNews() {
         description: "",
         imageUrl: "",
       };
+      newsImageFile.value = null;
+      newsImagePreview.value = null;
       showAddNewsModal.value = false;
 
       setTimeout(() => {

@@ -9,6 +9,9 @@ import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.Vote;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,8 +30,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentDTO> getCommentsByNewsId(Long newsId) {
+        boolean includeHidden = currentUserIsAdmin();
         return commentDao.findByNewsId(newsId)
                 .stream()
+                .filter(comment -> includeHidden || comment.isVisible())
                 .map(this::entityToDTO)
                 .collect(Collectors.toList());
     }
@@ -80,16 +85,47 @@ public class CommentServiceImpl implements CommentService {
         commentDao.deleteComment(id);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CommentDTO> getAllCommentsForAdmin() {
+        return commentDao.findAllOrderByCreatedAtDesc()
+                .stream()
+                .map(this::entityToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public CommentDTO updateVisibility(Long id, boolean visible) {
+        Comment comment = commentDao.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Comment not found with id: " + id));
+        comment.setVisible(visible);
+        Comment saved = commentDao.save(comment);
+        return entityToDTO(saved);
+    }
+
     private CommentDTO entityToDTO(Comment comment) {
         CommentDTO dto = new CommentDTO();
         dto.setId(comment.getId());
         dto.setNewsId(comment.getNews().getId());
+        dto.setNewsTitle(comment.getNews().getTitle());
         dto.setUserId(comment.getUser().getId());
         dto.setUsername(comment.getUser().getUsername());
         dto.setText(comment.getText());
         dto.setImageUrl(comment.getImageUrl());
         dto.setCreatedAt(comment.getCreatedAt());
         dto.setVoteType(comment.getVoteType());
+        dto.setVisible(comment.isVisible());
+        dto.setUserVerified(comment.getUser().isVerified());
         return dto;
+    }
+
+    private boolean currentUserIsAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 }

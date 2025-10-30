@@ -1,7 +1,5 @@
 package se331.daybreaknews.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,10 +13,13 @@ import java.time.LocalDateTime;
 public class CommentDTO {
     private Long id;
     private Long newsId;
+    private String newsTitle;
     private Long userId;
     private String username;
     private String text;
     private String imageUrl;
     private LocalDateTime createdAt;
     private VoteType voteType;
+    private boolean visible;
+    private boolean userVerified;
 }

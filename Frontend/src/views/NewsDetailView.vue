@@ -139,14 +139,23 @@
           >
             <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="text-lg font-semibold text-gray-900">
-                  {{ comment.username }}
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ comment.username }}
+                  </span>
+                  <span
+                    v-if="comment.userVerified"
+                    class="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 text-white text-xs"
+                    title="Verified user"
+                  >
+                    ✓
+                  </span>
                 </div>
                 <div
                   :class="voteBadgeClass(comment.voteType)"
                   class="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-bold uppercase rounded-full"
                 >
-                  {{ comment.voteType === "NOT_FAKE" ? "Fact" : "Fake" }}
+                  {{ comment.voteType === "FACT" ? "Fact" : "Fake" }}
                 </div>
               </div>
               <div class="text-sm text-gray-600">
@@ -220,16 +229,15 @@
             ></textarea>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Image URL (optional)</label
-            >
-            <input
-              v-model="newComment.imageUrl"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
+          <div class="space-y-3">
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Upload image</label>
+              <div class="flex items-center gap-4">
+                <input type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); commentImageFile = f; commentImagePreview = f ? objectUrl(f) : null; }" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -239,8 +247,8 @@
             <div class="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                :class="voteOptionClass('NOT_FAKE')"
-                @click="selectVote('NOT_FAKE')"
+                :class="voteOptionClass('FACT')"
+                @click="selectVote('FACT')"
               >
                 <img
                   src="/Fact.png"
@@ -296,11 +304,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
+import apiClient from "@/services/apiClient";
 
-type VoteChoice = "FAKE" | "NOT_FAKE";
+type VoteChoice = "FAKE" | "FACT";
 
 interface Props {
   id: string;
@@ -308,6 +317,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const route = useRoute();
+const router = useRouter();
 const newsStore = useNewsStore();
 newsStore.initializeAuthSync();
 
@@ -327,7 +337,15 @@ const newComment = reactive({
   imageUrl: "",
 });
 
-function loadCurrentUser(_event?: Event) {
+const commentImageFile = ref<File | null>(null);
+const commentImagePreview = ref<string | null>(null);
+
+function objectUrl(file: File): string {
+  return URL.createObjectURL(file);
+}
+
+
+function loadCurrentUser() {
   const raw = localStorage.getItem("user");
   if (!raw) {
     currentUser.value = null;
@@ -379,7 +397,7 @@ function getStoredVoteChoice(): VoteChoice | null {
     return null;
   }
   const stored = localStorage.getItem(key);
-  return stored === "FAKE" || stored === "NOT_FAKE" ? stored : null;
+  return stored === "FAKE" || stored === "FACT" ? stored : null;
 }
 
 function resolveVoteFromComments(): VoteChoice | null {
@@ -411,7 +429,7 @@ const currentStatusText = computed(() => {
   switch (currentStatus.value) {
     case "FAKE":
       return "FAKE";
-    case "NOT_FAKE":
+    case "FACT":
       return "FACT";
     default:
       return "UNVERIFIED";
@@ -422,7 +440,7 @@ const currentStatusImage = computed(() => {
   switch (currentStatus.value) {
     case "FAKE":
       return "/Fake.png";
-    case "NOT_FAKE":
+    case "FACT":
       return "/Fact.png";
     default:
       return "/Equal.png";
@@ -473,13 +491,13 @@ async function loadNewsDetail() {
 onMounted(() => {
   loadCurrentUser();
   loadNewsDetail();
-  window.addEventListener("storage", loadCurrentUser);
-  window.addEventListener("auth-changed", loadCurrentUser);
+  globalThis.addEventListener("storage", loadCurrentUser);
+  globalThis.addEventListener("auth-changed", loadCurrentUser);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("storage", loadCurrentUser);
-  window.removeEventListener("auth-changed", loadCurrentUser);
+  globalThis.removeEventListener("storage", loadCurrentUser);
+  globalThis.removeEventListener("auth-changed", loadCurrentUser);
 });
 
 watch(newsId, async () => {
@@ -492,12 +510,12 @@ watch(currentUser, async () => {
 });
 
 const commentCardClass = (voteType: VoteChoice) =>
-  voteType === "NOT_FAKE"
+  voteType === "FACT"
     ? "bg-green-50 border-green-300/70 hover:shadow-green-100"
     : "bg-red-50 border-red-300/70 hover:shadow-red-100";
 
 const voteBadgeClass = (voteType: VoteChoice) =>
-  voteType === "NOT_FAKE" ? "bg-green-600 text-white" : "bg-red-600 text-white";
+  voteType === "FACT" ? "bg-green-600 text-white" : "bg-red-600 text-white";
 
 const voteOptionClass = (choice: VoteChoice) => {
   const classes = [
@@ -511,7 +529,7 @@ const voteOptionClass = (choice: VoteChoice) => {
   ];
   if (selectedVote.value === choice) {
     classes.push(
-      choice === "NOT_FAKE"
+      choice === "FACT"
         ? "border-green-500 shadow-green-200/60 shadow-xl"
         : "border-red-500 shadow-red-200/60 shadow-xl"
     );
@@ -522,6 +540,13 @@ const voteOptionClass = (choice: VoteChoice) => {
 };
 
 const openModal = async () => {
+  if (!currentUser.value) {
+    await router.push({
+      path: "/login",
+      query: { redirect: route.fullPath },
+    });
+    return;
+  }
   modalError.value = "";
   await updateUserVoteStatus();
   syncSelectedVote();
@@ -559,9 +584,20 @@ async function submitComment() {
 
   isSubmitting.value = true;
   try {
+    let finalImageUrl: string | undefined = undefined;
+    if (commentImageFile.value) {
+      const formData = new FormData();
+      formData.append("file", commentImageFile.value);
+      formData.append("folder", "comment-images");
+      const { data } = await apiClient.post<{ url: string }>(
+        "/api/upload/image",
+        formData
+      );
+      finalImageUrl = data.url;
+    }
     await newsStore.addComment(numericNewsId.value, {
       text: newComment.text,
-      imageUrl: newComment.imageUrl || undefined,
+      imageUrl: finalImageUrl || newComment.imageUrl || undefined,
       voteType: effectiveVote,
     });
 
@@ -573,6 +609,8 @@ async function submitComment() {
     syncSelectedVote();
     newComment.text = "";
     newComment.imageUrl = "";
+    commentImageFile.value = null;
+    commentImagePreview.value = null;
     modalError.value = "";
     closeModal();
   } catch (error) {

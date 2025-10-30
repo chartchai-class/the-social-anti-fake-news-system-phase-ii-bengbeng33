@@ -1,4 +1,6 @@
-export type Status = "FAKE" | "NOT_FAKE" | "UNVERIFIED" | null;
+export type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
+
+export type UserRole = "READER" | "MEMBER" | "ADMIN";
 
 export interface NewsItem {
   id: number;
@@ -12,27 +14,32 @@ export interface NewsItem {
   imageUrl?: string;
   fakeVotes?: number;
   notFakeVotes?: number;
+  visible?: boolean;
 }
 
 export interface Comment {
   id: number;
+  newsId?: number;
+  newsTitle?: string;
   userId: number;
   username: string;
   text: string;
   imageUrl?: string;
   createdAt: string;
-  voteType: "FAKE" | "NOT_FAKE";
+  voteType: "FAKE" | "FACT";
+  visible?: boolean;
+  userVerified?: boolean;
 }
 
 export interface Vote {
   id: number;
   newsId: number;
-  voteType: "FAKE" | "NOT_FAKE";
+  voteType: "FAKE" | "FACT";
   userId: number;
   username: string;
 }
 
-export type NewsStatus = "FAKE" | "NOT_FAKE" | "UNVERIFIED";
+export type NewsStatus = "FAKE" | "FACT" | "UNVERIFIED";
 
 export interface User {
   id: number;
@@ -40,5 +47,8 @@ export interface User {
   surname: string;
   username: string;
   email: string;
+  profileImagePath?: string;
   createdAt: string;
+  roles?: UserRole[];
+  verified?: boolean;
 }

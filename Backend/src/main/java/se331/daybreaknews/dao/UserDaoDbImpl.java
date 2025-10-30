@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,12 +22,12 @@ public class UserDaoDbImpl implements UserDao {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return email == null ? Optional.empty() : userRepository.findByEmailIgnoreCase(email.trim());
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return username == null ? Optional.empty() : userRepository.findByUsernameIgnoreCase(username.trim());
     }
 
     @Override
@@ -43,5 +44,9 @@ public class UserDaoDbImpl implements UserDao {
     public User save(User user) {
         return userRepository.save(user);
     }
-}
 
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+}
