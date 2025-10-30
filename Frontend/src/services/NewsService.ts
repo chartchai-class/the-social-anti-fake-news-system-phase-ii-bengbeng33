@@ -14,8 +14,15 @@ export default {
     return apiClient.get<NewsItem[]>(`/api/news/status/${status}`);
   },
 
-  async createNews(news: Omit<NewsItem, "id" | "reportedAt"> & { reportedAt?: string }) {
-    return apiClient.post<NewsItem>("/api/news", news);
+  async searchNews(query?: string) {
+    const params = new URLSearchParams();
+    if (query && query.trim().length > 0) params.append("q", query.trim());
+    const path = params.toString().length > 0 ? `/news/search?${params.toString()}` : "/news/search";
+    return apiClient.get<NewsItem[]>(path);
+  },
+
+  async createNews(news: { title: string; content: string; reporter: string; imageUrl?: string; status?: string }) {
+    return apiClient.post<NewsItem>("/news", news);
   },
 
   async updateNews(

@@ -33,4 +33,11 @@ public class NewsController {
     public ResponseEntity<List<NewsDTO>> getNewsByStatus(@PathVariable NewsStatus status) {
         return ResponseEntity.ok(newsService.getNewsByStatus(status));
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<NewsDTO>> searchNews(
+            @RequestParam(name = "q", required = false) String q
+    ) {
+        return ResponseEntity.ok(newsService.searchNews(q));
+    }
 }

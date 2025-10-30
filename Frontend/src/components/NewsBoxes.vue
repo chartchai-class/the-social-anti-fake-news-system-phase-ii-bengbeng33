@@ -66,6 +66,23 @@
 import { useRouter } from "vue-router";
 import type { NewsItem, Status } from "@/types";
 
+type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
+
+interface NewsItem {
+  id: number;
+  title: string;
+  summary?: string;
+  content: string;
+  status?: Status;
+  currentStatus?: Status;
+  reporter: string;
+  reportedAt: string;
+  imageUrl?: string;
+  fakeVotes?: number;
+  notFakeVotes?: number;
+}
+
+// Define props without variable assignment
 defineProps<{
   items: NewsItem[];
 }>();
@@ -78,7 +95,7 @@ function goToNewsDetail(newsId: number) {
 
 function getStatusImage(s: Status) {
   if (s === "FAKE") return "/Fake.png";
-  if (s === "NOT_FAKE") return "/Fact.png";
+  if (s === "FACT") return "/Fact.png";
   return "/Equal.png";
 }
 
