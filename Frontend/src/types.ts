@@ -1,4 +1,4 @@
-export type Status = "FAKE" | "NOT_FAKE" | null;
+export type Status = "FAKE" | "NOT_FAKE" | "UNVERIFIED" | null;
 
 export interface NewsItem {
   id: number;
@@ -6,6 +6,7 @@ export interface NewsItem {
   summary?: string;
   content: string;
   status?: Status;
+  currentStatus?: Status;
   reporter: string;
   reportedAt: string;
   imageUrl?: string;
@@ -15,16 +16,29 @@ export interface NewsItem {
 
 export interface Comment {
   id: number;
-  user: string;
+  userId: number;
+  username: string;
   text: string;
   imageUrl?: string;
   createdAt: string;
+  voteType: "FAKE" | "NOT_FAKE";
 }
 
 export interface Vote {
+  id: number;
   newsId: number;
   voteType: "FAKE" | "NOT_FAKE";
-  userIdentifier: string;
+  userId: number;
+  username: string;
 }
 
 export type NewsStatus = "FAKE" | "NOT_FAKE" | "UNVERIFIED";
+
+export interface User {
+  id: number;
+  name: string;
+  surname: string;
+  username: string;
+  email: string;
+  createdAt: string;
+}

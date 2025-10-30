@@ -2,34 +2,49 @@ import { defineStore } from "pinia";
 import NewsService from "@/services/NewsService";
 import CommentService from "@/services/CommentService";
 import VoteService from "@/services/VoteService";
-
-type Status = "FAKE" | "NOT_FAKE" | null;
-
-interface NewsItem {
-  id: number;
-  title: string;
-  summary?: string;
-  content: string;
-  status?: Status;
-  reporter: string;
-  reportedAt: string;
-  imageUrl?: string;
-  fakeVotes?: number;
-  notFakeVotes?: number;
-}
-
-interface Comment {
-  id: number;
-  user: string;
-  text: string;
-  imageUrl?: string;
-  createdAt: string;
-}
+import type { Comment, NewsItem, Status, User } from "@/types";
 
 interface CommentData {
   text: string;
   imageUrl?: string;
-  user?: string;
+  voteType: "FAKE" | "NOT_FAKE";
+}
+
+function getStoredUser(): User | null {
+  const raw = localStorage.getItem("user");
+  if (!raw) {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as User;
+  } catch (error) {
+    console.warn("Unable to parse stored user", error);
+    return null;
+  }
+}
+
+function getVoteChoiceKey(newsId: number, userId: number) {
+  return `voteChoice:${userId}:${newsId}`;
+}
+
+function deriveStatus(
+  fakeVotes?: number,
+  notFakeVotes?: number,
+  fallback?: Status | "UNVERIFIED" | null
+): Status {
+  if (fakeVotes == null || notFakeVotes == null) {
+    return (fallback as Status) ?? null;
+  }
+  if (fakeVotes === 0 && notFakeVotes === 0) {
+    return "UNVERIFIED";
+  }
+  if (fakeVotes > notFakeVotes) {
+    return "FAKE";
+  }
+  if (notFakeVotes > fakeVotes) {
+    return "NOT_FAKE";
+  }
+  return "UNVERIFIED";
 }
 
 interface NewNewsData {
@@ -117,7 +132,11 @@ export const useNewsStore = defineStore("news", {
       (newsId: string | number): Status => {
         const id = Number.parseInt(newsId.toString());
         const news = state.allNews.find((n) => n.id === id);
-        return news?.status || null;
+        return deriveStatus(
+          news?.fakeVotes,
+          news?.notFakeVotes,
+          news?.status ?? null
+        );
       },
 
     // Filter news by status
@@ -132,12 +151,30 @@ export const useNewsStore = defineStore("news", {
     getNewsWithCurrentVotes: (state) => (): NewsItem[] => {
       return state.allNews.map((news) => ({
         ...news,
-        currentStatus: news.status,
+        currentStatus: deriveStatus(
+          news.fakeVotes,
+          news.notFakeVotes,
+          news.status ?? null
+        ),
       }));
     },
   },
 
   actions: {
+    initializeAuthSync() {
+      if (typeof window === "undefined") {
+        return;
+      }
+      if ((this as any)._authSyncInitialized) {
+        return;
+      }
+      (this as any)._authSyncInitialized = true;
+      window.addEventListener("auth-changed", () => {
+        this.userVotes.clear();
+        this.clearCache();
+      });
+    },
+
     // Fetch all news from API
     async fetchAllNews() {
       this.isLoading = true;
@@ -181,30 +218,27 @@ export const useNewsStore = defineStore("news", {
       }
     },
 
-    // Vote on a news item
-    async voteOnNews(
-      newsId: string | number,
-      voteType: Status
-    ): Promise<boolean> {
+    async refreshUserVoteStatus(newsId: string | number): Promise<boolean> {
       const id = Number.parseInt(newsId.toString());
+      const user = getStoredUser();
 
-      // Check if user already voted
-      if (this.userVotes.has(id)) {
-        console.warn("User has already voted on this news");
+      if (!user) {
+        this.userVotes.delete(id);
         return false;
       }
 
       try {
-        await VoteService.createVote(id, voteType as "FAKE" | "NOT_FAKE");
-        this.userVotes.add(id);
-
-        // Refresh the news item to get updated vote counts
-        await this.fetchNewsById(id);
-
-        return true;
+        const { data } = await VoteService.hasUserVoted(id, user.id);
+        if (data.hasVoted) {
+          this.userVotes.add(id);
+        } else {
+          this.userVotes.delete(id);
+          localStorage.removeItem(getVoteChoiceKey(id, user.id));
+        }
+        return data.hasVoted;
       } catch (error) {
-        console.error("Error voting:", error);
-        return false;
+        console.error("Error checking vote status:", error);
+        return this.userVotes.has(id);
       }
     },
 
@@ -214,9 +248,25 @@ export const useNewsStore = defineStore("news", {
       commentData: CommentData
     ): Promise<Comment> {
       const id = Number.parseInt(newsId.toString());
+      const user = getStoredUser();
+
+      if (!user) {
+        throw new Error("User must be logged in to comment");
+      }
 
       try {
-        const { data: newComment } = await CommentService.createComment(id, commentData);
+        const { data: newComment } = await CommentService.createComment(id, {
+          userId: user.id,
+          ...commentData,
+        });
+
+        this.userVotes.add(id);
+        localStorage.setItem(
+          getVoteChoiceKey(id, user.id),
+          commentData.voteType
+        );
+
+        await this.fetchNewsById(id);
 
         // Update cache
         const comments = this.commentsCache.get(id) || [];

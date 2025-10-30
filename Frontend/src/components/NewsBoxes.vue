@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-type Status = "FAKE" | "NOT_FAKE" | null;
+type Status = "FAKE" | "NOT_FAKE" | "UNVERIFIED" | null;
 
 interface NewsItem {
   id: number;

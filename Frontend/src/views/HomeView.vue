@@ -83,15 +83,13 @@
           <!-- Reporter -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Reporter *</label
+              >Reporter</label
             >
-            <input
-              v-model="newNews.reporter"
-              type="text"
-              required
-              placeholder="Reporter name"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
+            <p
+              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+            >
+              {{ currentUser?.username ?? 'Unknown reporter' }}
+            </p>
           </div>
 
           <!-- Image URL -->
@@ -120,7 +118,7 @@
               :disabled="
                 !newNews.topic.trim() ||
                 !newNews.description.trim() ||
-                !newNews.reporter.trim()
+                !currentUser
               "
               class="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -141,23 +139,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import NewsBoxes from "@/components/NewsBoxes.vue";
 import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
-
-interface NewsItem {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  status: "FAKE" | "NOT_FAKE" | null;
-  currentStatus?: "FAKE" | "NOT_FAKE" | null;
-  reporter: string;
-  reportedAt: string;
-  imageUrl: string;
-  stats: { fake: number; notFake: number };
-}
+import type { NewsItem, User } from "@/types";
 
 interface Props {
   itemsPerPage?: number;
@@ -168,6 +154,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const newsStore = useNewsStore();
+newsStore.initializeAuthSync();
 
 // Loading states
 const loading = ref(false);
@@ -175,17 +162,39 @@ const loadingProgress = ref(0);
 
 // Add news modal state
 const showAddNewsModal = ref(false);
+const currentUser = ref<User | null>(null);
 const newNews = ref({
   topic: "",
   description: "",
-  reporter: "",
   imageUrl: "",
 });
 
+function loadCurrentUser(_event?: Event) {
+  const raw = localStorage.getItem("user");
+  if (!raw) {
+    currentUser.value = null;
+    return;
+  }
+  try {
+    currentUser.value = JSON.parse(raw) as User;
+  } catch (error) {
+    console.warn("Unable to parse stored user", error);
+    currentUser.value = null;
+  }
+}
+
 // Simulate loading when component mounts
 onMounted(async () => {
+  loadCurrentUser();
   simulateLoading();
   await newsStore.fetchAllNews();
+  window.addEventListener("storage", loadCurrentUser);
+  window.addEventListener("auth-changed", loadCurrentUser);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("storage", loadCurrentUser);
+  window.removeEventListener("auth-changed", loadCurrentUser);
 });
 
 function simulateLoading() {
@@ -233,11 +242,14 @@ const paginatedNews = computed((): NewsItem[] => {
 });
 
 async function addNews() {
+  const reporterName = currentUser.value?.username;
+
   if (
     !newNews.value.topic.trim() ||
     !newNews.value.description.trim() ||
-    !newNews.value.reporter.trim()
+    !reporterName
   ) {
+    console.warn("Missing required fields for adding news");
     return;
   }
 
@@ -255,7 +267,7 @@ async function addNews() {
       await newsStore.addNews({
         title: newNews.value.topic,
         content: newNews.value.description,
-        reporter: newNews.value.reporter,
+        reporter: reporterName,
         imageUrl:
           newNews.value.imageUrl ||
           `https://picsum.photos/id/${Math.floor(Math.random() * 200) + 100}/800/400`,
@@ -266,7 +278,6 @@ async function addNews() {
       newNews.value = {
         topic: "",
         description: "",
-        reporter: "",
         imageUrl: "",
       };
       showAddNewsModal.value = false;
