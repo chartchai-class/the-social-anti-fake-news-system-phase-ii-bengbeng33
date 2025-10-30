@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
 public class CommentController {
@@ -23,9 +25,14 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<CommentDTO> createComment(@Valid @RequestBody CommentDTO dto) {
-        CommentDTO comment = commentService.createComment(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+    public ResponseEntity<?> createComment(@Valid @RequestBody CommentDTO dto) {
+        try {
+            CommentDTO comment = commentService.createComment(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", ex.getMessage()));
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -34,4 +41,3 @@ public class CommentController {
         return ResponseEntity.noContent().build();
     }
 }
-

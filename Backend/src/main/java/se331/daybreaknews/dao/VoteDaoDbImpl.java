@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,8 +17,8 @@ public class VoteDaoDbImpl implements VoteDao {
     final VoteRepository voteRepository;
 
     @Override
-    public Optional<Vote> findByNewsIdAndUserIdentifier(Long newsId, String userIdentifier) {
-        return voteRepository.findByNewsIdAndUserIdentifier(newsId, userIdentifier);
+    public Optional<Vote> findByNewsIdAndUserId(Long newsId, Long userId) {
+        return voteRepository.findByNewsIdAndUserId(newsId, userId);
     }
 
     @Override
@@ -31,10 +30,4 @@ public class VoteDaoDbImpl implements VoteDao {
     public Vote save(Vote vote) {
         return voteRepository.save(vote);
     }
-
-    @Override
-    public List<Vote> findByNewsId(Long newsId) {
-        return voteRepository.findByNewsId(newsId);
-    }
 }
-

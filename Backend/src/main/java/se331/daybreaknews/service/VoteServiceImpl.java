@@ -1,47 +1,66 @@
 package se331.daybreaknews.service;
 
-import se331.daybreaknews.dao.VoteDao;
-import se331.daybreaknews.dto.VoteDTO;
-import se331.daybreaknews.entity.Vote;
-import se331.daybreaknews.entity.VoteType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import se331.daybreaknews.dao.NewsDao;
+import se331.daybreaknews.dao.VoteDao;
+import se331.daybreaknews.entity.Comment;
+import se331.daybreaknews.entity.News;
+import se331.daybreaknews.entity.NewsStatus;
+import se331.daybreaknews.entity.User;
+import se331.daybreaknews.entity.Vote;
+import se331.daybreaknews.entity.VoteType;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class VoteServiceImpl implements VoteService {
     final VoteDao voteDao;
+    final NewsDao newsDao;
 
     @Override
     @Transactional
-    public VoteDTO createVote(VoteDTO dto) {
-        if (dto.getUserIdentifier() == null || dto.getUserIdentifier().isEmpty()) {
-            dto.setUserIdentifier(UUID.randomUUID().toString());
+    public Vote createVoteForComment(News news, User user, Comment comment, VoteType voteType) {
+        if (news == null) {
+            throw new IllegalArgumentException("News must not be null");
         }
-        
-        boolean hasVoted = voteDao.findByNewsIdAndUserIdentifier(
-            dto.getNewsId(), dto.getUserIdentifier()).isPresent();
-        
-        if (hasVoted) {
-            throw new RuntimeException("User has already voted on this news");
+        if (user == null) {
+            throw new IllegalArgumentException("User must not be null");
         }
-        
-        Vote vote = new Vote();
-        vote.setNewsId(dto.getNewsId());
-        vote.setVoteType(dto.getVoteType());
-        vote.setUserIdentifier(dto.getUserIdentifier());
-        
+        if (comment == null) {
+            throw new IllegalArgumentException("Comment must not be null");
+        }
+        if (voteType == null) {
+            throw new IllegalArgumentException("Vote type is required for a vote");
+        }
+
+        if (voteDao.findByNewsIdAndUserId(news.getId(), user.getId()).isPresent()) {
+            throw new IllegalArgumentException("User has already voted on this news");
+        }
+
+        Vote vote = Vote.builder()
+                .news(news)
+                .user(user)
+                .comment(comment)
+                .voteType(voteType)
+                .createdAt(LocalDateTime.now())
+                .build();
+
         Vote saved = voteDao.save(vote);
-        return entityToDTO(saved);
+        comment.setVote(saved);
+        updateNewsStatus(news);
+        return saved;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public boolean hasUserVoted(Long newsId, String userIdentifier) {
-        return voteDao.findByNewsIdAndUserIdentifier(newsId, userIdentifier).isPresent();
+    public boolean hasUserVoted(Long newsId, Long userId) {
+        if (newsId == null || userId == null) {
+            return false;
+        }
+        return voteDao.findByNewsIdAndUserId(newsId, userId).isPresent();
     }
 
     @Override
@@ -62,11 +81,24 @@ public class VoteServiceImpl implements VoteService {
         return voteDao.countByNewsIdAndVoteType(newsId, VoteType.NOT_FAKE);
     }
 
-    private VoteDTO entityToDTO(Vote vote) {
-        VoteDTO dto = new VoteDTO();
-        dto.setNewsId(vote.getNewsId());
-        dto.setVoteType(vote.getVoteType());
-        dto.setUserIdentifier(vote.getUserIdentifier());
-        return dto;
+    private void updateNewsStatus(News news) {
+        long fakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FAKE);
+        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.NOT_FAKE);
+
+        NewsStatus newStatus;
+        if (fakeVotes == 0 && notFakeVotes == 0) {
+            newStatus = NewsStatus.UNVERIFIED;
+        } else if (fakeVotes > notFakeVotes) {
+            newStatus = NewsStatus.FAKE;
+        } else if (notFakeVotes > fakeVotes) {
+            newStatus = NewsStatus.NOT_FAKE;
+        } else {
+            newStatus = NewsStatus.UNVERIFIED;
+        }
+
+        if (news.getStatus() != newStatus) {
+            news.setStatus(newStatus);
+            newsDao.save(news);
+        }
     }
 }

@@ -42,19 +42,7 @@ import { computed, ref, watch, onMounted } from "vue";
 import NewsBoxes from "@/components/NewsBoxes.vue";
 import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
-
-interface NewsItem {
-  id: number;
-  title: string;
-  summary: string;
-  content: string;
-  status: "FAKE" | "NOT_FAKE" | null;
-  currentStatus?: "FAKE" | "NOT_FAKE" | null;
-  reporter: string;
-  reportedAt: string;
-  imageUrl: string;
-  stats: { fake: number; notFake: number };
-}
+import type { NewsItem } from "@/types";
 
 interface Props {
   itemsPerPage?: number;
@@ -65,6 +53,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const newsStore = useNewsStore();
+newsStore.initializeAuthSync();
 
 // Loading states
 const loading = ref(false);

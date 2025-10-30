@@ -6,6 +6,7 @@ frontend/.DS_Store
 
 # Backend
 backend/target/
+Backend/target/
 backend/.mvn/wrapper/maven-wrapper.jar
 
 # VSCode
