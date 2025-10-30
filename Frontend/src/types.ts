@@ -14,16 +14,20 @@ export interface NewsItem {
   imageUrl?: string;
   fakeVotes?: number;
   notFakeVotes?: number;
+  visible?: boolean;
 }
 
 export interface Comment {
   id: number;
+  newsId?: number;
+  newsTitle?: string;
   userId: number;
   username: string;
   text: string;
   imageUrl?: string;
   createdAt: string;
   voteType: "FAKE" | "FACT";
+  visible?: boolean;
 }
 
 export interface Vote {

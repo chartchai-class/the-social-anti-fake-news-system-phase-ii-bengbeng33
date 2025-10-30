@@ -30,7 +30,7 @@
     </div>
 
     <!-- Add News Button -->
-    <div class="px-4 sm:px-6 lg:px-8 mb-4">
+    <div v-if="canCreateNews" class="px-4 sm:px-6 lg:px-8 mb-4">
       <div class="flex justify-center">
         <button
           @click="showAddNewsModal = true"
@@ -187,6 +187,10 @@ const newNews = ref({
   topic: "",
   description: "",
   imageUrl: "",
+});
+const canCreateNews = computed(() => {
+  const roles = currentUser.value?.roles ?? [];
+  return roles.includes("ADMIN") || roles.includes("MEMBER");
 });
 
 const newsImageFile = ref<File | null>(null);

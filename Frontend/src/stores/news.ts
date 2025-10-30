@@ -172,6 +172,18 @@ export const useNewsStore = defineStore("news", {
         this.userVotes.clear();
         this.clearCache();
       });
+      globalThis.window.addEventListener(
+        "admin-comment-updated",
+        (event: Event) => {
+          const detail = (event as CustomEvent<{ newsId?: number }>).detail;
+          if (detail?.newsId != null) {
+            this.commentsCache.delete(detail.newsId);
+            this.fetchNewsById(detail.newsId).catch((error) => {
+              console.error("Error refreshing news after comment update", error);
+            });
+          }
+        },
+      );
     },
 
     // Fetch all news from API

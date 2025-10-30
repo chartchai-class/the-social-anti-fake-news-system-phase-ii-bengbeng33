@@ -42,6 +42,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/upload/image").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/news/**", "/api/comments/**", "/api/votes/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider)

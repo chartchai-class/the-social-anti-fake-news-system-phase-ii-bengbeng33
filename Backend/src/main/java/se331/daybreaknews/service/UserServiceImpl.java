@@ -10,7 +10,10 @@ import se331.daybreaknews.dto.UserDTO;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.UserRole;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -70,6 +73,36 @@ public class UserServiceImpl implements UserService {
                 .createdAt(user.getCreatedAt())
                 .roles(user.getRoles())
                 .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserDTO> getAllUsers() {
+        return userDao.findAll()
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public UserDTO updateMemberRole(Long userId, boolean makeMember) {
+        User user = userDao.getUser(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        if (user.getRoles() == null) {
+            user.setRoles(new HashSet<>());
+        }
+
+        if (makeMember) {
+            user.getRoles().add(UserRole.MEMBER);
+        } else {
+            user.getRoles().remove(UserRole.MEMBER);
+        }
+        user.getRoles().add(UserRole.READER);
+
+        User saved = userDao.save(user);
+        return toDTO(saved);
     }
 
     private String generateUniqueUsername(String name, String surname) {

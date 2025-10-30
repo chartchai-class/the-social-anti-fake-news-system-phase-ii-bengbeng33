@@ -6,10 +6,12 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import se331.daybreaknews.entity.Comment;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.UserRole;
+import se331.daybreaknews.repository.CommentRepository;
 import se331.daybreaknews.repository.NewsRepository;
 import se331.daybreaknews.repository.UserRepository;
 
@@ -23,12 +25,15 @@ import java.util.Set;
 public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
     private final NewsRepository newsRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent event) {
         seedDefaultAdmin();
+        ensureExistingNewsAreVisible();
+        ensureExistingCommentsAreVisible();
         if (newsRepository.count() > 0) return; // already seeded
         seedHardcoded();
     }
@@ -49,6 +54,36 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
         admin.getRoles().addAll(Set.of(UserRole.READER, UserRole.MEMBER, UserRole.ADMIN));
 
         userRepository.save(admin);
+    }
+
+    private void ensureExistingNewsAreVisible() {
+        long totalNews = newsRepository.count();
+        if (totalNews == 0) {
+            return;
+        }
+        long hiddenNews = newsRepository.countByVisibleFalse();
+        if (hiddenNews == totalNews) {
+            newsRepository.findAll().forEach(news -> {
+                if (!news.isVisible()) {
+                    news.setVisible(true);
+                }
+            });
+        }
+    }
+
+    private void ensureExistingCommentsAreVisible() {
+        long totalComments = commentRepository.count();
+        if (totalComments == 0) {
+            return;
+        }
+        long hiddenComments = commentRepository.countByVisibleFalse();
+        if (hiddenComments == totalComments) {
+            commentRepository.findAll().forEach(comment -> {
+                if (!comment.isVisible()) {
+                    comment.setVisible(true);
+                }
+            });
+        }
     }
 
     private void seedHardcoded() {

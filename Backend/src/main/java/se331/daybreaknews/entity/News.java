@@ -10,6 +10,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -48,6 +50,10 @@ public class News {
     private String imageUrl;
 
     @Builder.Default
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean visible = true;
+
+    @Builder.Default
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "news", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -59,12 +65,24 @@ public class News {
     @OneToMany(mappedBy = "news", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vote> votes = new ArrayList<>();
 
+    @PrePersist
     protected void onCreate() {
+        if (status == null) {
+            status = NewsStatus.UNVERIFIED;
+        }
         if (reportedAt == null) {
             reportedAt = LocalDateTime.now();
         }
+        visible = true;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         if (status == null) {
             status = NewsStatus.UNVERIFIED;
+        }
+        if (reportedAt == null) {
+            reportedAt = LocalDateTime.now();
         }
     }
 }

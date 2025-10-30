@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -51,12 +53,24 @@ public class Comment {
     @Enumerated(EnumType.STRING)
     private VoteType voteType;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean visible = true;
+
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @OneToOne(mappedBy = "comment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Vote vote;
 
+    @PrePersist
     protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        visible = true;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
