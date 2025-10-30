@@ -59,4 +59,23 @@ const router = createRouter({
   routes
 })
 
+// Global auth guard: only allow access to login/register when not authenticated
+router.beforeEach((to) => {
+  const publicPaths = ['/login', '/register']
+  const isPublic = publicPaths.includes(to.path)
+  const user = localStorage.getItem('user')
+
+  // If not logged in and trying to access a protected route, redirect to login
+  if (!user && !isPublic) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+
+  // If logged in and going to login/register, redirect to home
+  if (user && isPublic) {
+    return { path: '/' }
+  }
+
+  return true
+})
+
 export default router

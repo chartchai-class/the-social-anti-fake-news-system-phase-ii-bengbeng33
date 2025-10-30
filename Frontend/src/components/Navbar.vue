@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-orange-500 shadow-lg border-b border-orange-600">
+  <nav class="relative z-50 bg-orange-500 shadow-lg border-b border-orange-600">
     <div class="w-full px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
         <!-- Left side: Logo and Web Text -->
@@ -49,45 +49,56 @@
                 v-if="dropdownOpen"
                 class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 flex flex-col xl:hidden border border-gray-200"
               >
-                <router-link
-                  to="/"
-                  class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
-                  @click="closeDropdown"
-                >
-                  All
-                </router-link>
-                <router-link
-                  to="/fact"
-                  class="px-4 py-3 hover:bg-green-50 text-green-700 font-medium transition-colors duration-200"
-                  @click="closeDropdown"
-                >
-                  Fact
-                </router-link>
-                <router-link
-                  to="/fake"
-                  class="px-4 py-3 hover:bg-red-50 text-red-700 font-medium transition-colors duration-200"
-                  @click="closeDropdown"
-                >
-                  Fake
-                </router-link>
+                <template v-if="isLoggedIn">
+                  <router-link
+                    to="/"
+                    class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    All
+                  </router-link>
+                  <router-link
+                    to="/fact"
+                    class="px-4 py-3 hover:bg-green-50 text-green-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    Fact
+                  </router-link>
+                  <router-link
+                    to="/fake"
+                    class="px-4 py-3 hover:bg-red-50 text-red-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    Fake
+                  </router-link>
+                </template>
                 <div class="border-t border-gray-200 my-2"></div>
-                <router-link
-                  to="/login"
-                  class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
-                  @click="closeDropdown"
+                <template v-if="!isLoggedIn">
+                  <router-link
+                    to="/login"
+                    class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    Log In
+                  </router-link>
+                  <router-link
+                    to="/register"
+                    class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    Register
+                  </router-link>
+                </template>
+                <button
+                  v-else
+                  @click="handleLogout"
+                  class="text-left px-4 py-3 hover:bg-orange-50 text-red-600 font-medium transition-colors duration-200"
                 >
-                  Log In
-                </router-link>
-                <router-link
-                  to="/register"
-                  class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
-                  @click="closeDropdown"
-                >
-                  Register
-                </router-link>
-                <div class="border-t border-gray-200 my-2"></div>
+                  Logout
+                </button>
+                <div class="border-t border-gray-200 my-2" v-if="isLoggedIn"></div>
                 <!-- PaginationControl - Direct display -->
-                <div v-if="$route.path === '/' || $route.path === '/fact' || $route.path === '/fake'" class="px-4 py-2">
+                <div v-if="isLoggedIn && ($route.path === '/' || $route.path === '/fact' || $route.path === '/fake')" class="px-4 py-2">
                   <PaginationControl
                     v-model="localItemsPerPage"
                     @update:modelValue="updateItemsPerPage"
@@ -101,7 +112,7 @@
         <!-- Right side: Navigation Links and Pagination Control (hidden on mobile and tablet) -->
         <div class="hidden xl:flex items-center space-x-4 xl:space-x-6">
           <!-- Navigation Links -->
-          <div class="flex space-x-4">
+          <div class="flex space-x-4" v-if="isLoggedIn">
             <router-link 
               to="/"
               :class="[
@@ -137,33 +148,42 @@
             </router-link>
           </div>
           <!-- Auth Links -->
-          <div class="flex space-x-3 ml-4">
-            <router-link 
-              to="/login"
-              :class="[
-                'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
-                $route.path === '/login' 
-                  ? 'bg-white text-orange-700' 
-                  : 'text-white hover:text-orange-200 hover:bg-orange-600'
-              ]"
+          <div class="flex items-center space-x-3 ml-4">
+            <template v-if="!isLoggedIn">
+              <router-link 
+                to="/login"
+                :class="[
+                  'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
+                  $route.path === '/login' 
+                    ? 'bg-white text-orange-700' 
+                    : 'text-white hover:text-orange-200 hover:bg-orange-600'
+                ]"
+              >
+                Log In
+              </router-link>
+              <router-link 
+                to="/register"
+                :class="[
+                  'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
+                  $route.path === '/register' 
+                    ? 'bg-white text-orange-700' 
+                    : 'bg-white/20 text-white hover:bg-white/30'
+                ]"
+              >
+                Register
+              </router-link>
+            </template>
+            <button
+              v-else
+              @click="handleLogout"
+              class="px-4 py-2 rounded-md text-sm font-medium bg-white/20 text-white hover:bg-white/30 transition-colors duration-200"
             >
-              Log In
-            </router-link>
-            <router-link 
-              to="/register"
-              :class="[
-                'px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200',
-                $route.path === '/register' 
-                  ? 'bg-white text-orange-700' 
-                  : 'bg-white/20 text-white hover:bg-white/30'
-              ]"
-            >
-              Register
-            </router-link>
+              Logout
+            </button>
           </div>
           <!-- Pagination Control - Only show on home page and fact/fake pages -->
           <PaginationControl 
-            v-if="$route.path === '/' || $route.path === '/fact' || $route.path === '/fake'"
+            v-if="isLoggedIn && ($route.path === '/' || $route.path === '/fact' || $route.path === '/fake')"
             v-model="localItemsPerPage"
             @update:modelValue="updateItemsPerPage"
           />
@@ -176,12 +196,14 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import PaginationControl from './PaginationControl.vue'
+import { useRouter, useRoute } from 'vue-router'
 
 interface Props {
   itemsPerPage: number
 }
 
 const props = defineProps<Props>()
+const router = useRouter()
 const localItemsPerPage = ref(props.itemsPerPage)
 
 // Responsive dropdown states
@@ -226,19 +248,37 @@ const emit = defineEmits<{
 }>()
 
 // Close dropdown on route change
-import { useRoute } from 'vue-router'
 const route = useRoute()
 watch(() => route.path, closeDropdown)
 
 // Add event listeners
+// Auth state and logout handler
+const isLoggedIn = ref<boolean>(false)
+
+function refreshAuthState() {
+  isLoggedIn.value = !!localStorage.getItem('user')
+}
+
+function handleLogout() {
+  localStorage.removeItem('user')
+  refreshAuthState()
+  closeDropdown()
+  router.push('/login')
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleEscape)
+  refreshAuthState()
+  window.addEventListener('storage', refreshAuthState)
+  window.addEventListener('auth-changed', refreshAuthState as EventListener)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleEscape)
+  window.removeEventListener('storage', refreshAuthState)
+  window.removeEventListener('auth-changed', refreshAuthState as EventListener)
 })
 </script>
 
