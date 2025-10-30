@@ -35,6 +35,7 @@ public class UserServiceImpl implements UserService {
                 .username(username)
                 .email(normalizeEmail(request.getEmail()))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .profileImagePath(request.getProfileImagePath())
                 .build();
         user.getRoles().add(UserRole.READER);
 
@@ -65,6 +66,7 @@ public class UserServiceImpl implements UserService {
                 .surname(user.getSurname())
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .profileImagePath(user.getProfileImagePath())
                 .createdAt(user.getCreatedAt())
                 .roles(user.getRoles())
                 .build();

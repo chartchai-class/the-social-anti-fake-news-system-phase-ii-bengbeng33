@@ -42,6 +42,7 @@ export interface User {
   surname: string;
   username: string;
   email: string;
+  profileImagePath?: string;
   createdAt: string;
   roles?: UserRole[];
 }

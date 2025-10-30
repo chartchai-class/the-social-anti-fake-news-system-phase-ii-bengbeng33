@@ -66,7 +66,7 @@
                 <div class="relative">
                   <label for="profile-upload"
                     class="cursor-pointer flex flex-col items-center justify-center w-40 h-40 bg-gray-100 rounded-full border-2 border-gray-700 hover:bg-gray-200 transition-colors shadow-lg">
-                    <input id="profile-upload" type="file" accept="image/*" @change="handleProfileUpload"
+                    <input id="profile-upload" type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); profileFile = f; profilePreview = f ? objectUrl(f) : null; }"
                       class="hidden" />
                     <div class="relative flex flex-col items-center justify-center w-full h-full">
                       <svg v-if="!profilePreview" class="w-12 h-12 text-gray-700" fill="currentColor"
@@ -124,6 +124,7 @@
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AuthService from '@/services/AuthService';
+import apiClient from '@/services/apiClient';
 import type { AxiosError } from 'axios';
 
 const router = useRouter();
@@ -138,6 +139,9 @@ const form = ref({
 
 const profileFile = ref<File | null>(null);
 const profilePreview = ref<string | null>(null);
+function objectUrl(file: File): string {
+  return URL.createObjectURL(file);
+}
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
@@ -148,18 +152,7 @@ const passwordMismatch = computed(() => {
   );
 });
 
-function handleProfileUpload(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-  if (file) {
-    profileFile.value = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      profilePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  }
-}
+// inline handler is used in template; dedicated function not needed
 
 async function handleRegister() {
   if (passwordMismatch.value) {
@@ -171,11 +164,24 @@ async function handleRegister() {
   errorMessage.value = '';
 
   try {
+    let profileImagePath: string | undefined = undefined;
+    if (profileFile.value) {
+      const formData = new FormData();
+      formData.append('file', profileFile.value);
+      formData.append('folder', 'profile-images');
+      const { data: uploadResp } = await apiClient.post<{ url: string }>(
+        '/api/upload/image',
+        formData
+      );
+      profileImagePath = uploadResp.url;
+    }
+
     const { data } = await AuthService.register({
       name: form.value.name,
       surname: form.value.surname,
       email: form.value.email,
       password: form.value.password,
+      profileImagePath,
     });
 
     localStorage.setItem('user', JSON.stringify(data.user));

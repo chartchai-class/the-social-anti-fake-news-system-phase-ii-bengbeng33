@@ -49,6 +49,8 @@ public class User {
 
     private String passwordHash;
 
+    private String profileImagePath;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
