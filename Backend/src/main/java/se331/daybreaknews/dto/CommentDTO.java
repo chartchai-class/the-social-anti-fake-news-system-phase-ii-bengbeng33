@@ -21,4 +21,5 @@ public class CommentDTO {
     private LocalDateTime createdAt;
     private VoteType voteType;
     private boolean visible;
+    private boolean userVerified;
 }

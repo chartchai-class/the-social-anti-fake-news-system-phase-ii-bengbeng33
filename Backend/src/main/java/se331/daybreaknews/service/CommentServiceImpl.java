@@ -116,6 +116,7 @@ public class CommentServiceImpl implements CommentService {
         dto.setCreatedAt(comment.getCreatedAt());
         dto.setVoteType(comment.getVoteType());
         dto.setVisible(comment.isVisible());
+        dto.setUserVerified(comment.getUser().isVerified());
         return dto;
     }
 

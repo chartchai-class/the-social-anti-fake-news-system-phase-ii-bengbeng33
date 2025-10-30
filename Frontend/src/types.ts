@@ -28,6 +28,7 @@ export interface Comment {
   createdAt: string;
   voteType: "FAKE" | "FACT";
   visible?: boolean;
+  userVerified?: boolean;
 }
 
 export interface Vote {
@@ -49,4 +50,5 @@ export interface User {
   profileImagePath?: string;
   createdAt: string;
   roles?: UserRole[];
+  verified?: boolean;
 }

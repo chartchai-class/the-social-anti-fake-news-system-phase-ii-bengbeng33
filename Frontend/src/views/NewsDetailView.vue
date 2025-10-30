@@ -139,8 +139,17 @@
           >
             <div class="flex items-start justify-between gap-4">
               <div>
-                <div class="text-lg font-semibold text-gray-900">
-                  {{ comment.username }}
+                <div class="flex items-center gap-2">
+                  <span class="text-lg font-semibold text-gray-900">
+                    {{ comment.username }}
+                  </span>
+                  <span
+                    v-if="comment.userVerified"
+                    class="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 text-white text-xs"
+                    title="Verified user"
+                  >
+                    ✓
+                  </span>
                 </div>
                 <div
                   :class="voteBadgeClass(comment.voteType)"

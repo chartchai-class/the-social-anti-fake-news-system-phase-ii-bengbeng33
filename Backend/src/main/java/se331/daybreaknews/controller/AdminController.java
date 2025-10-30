@@ -14,6 +14,7 @@ import se331.daybreaknews.dto.NewsDTO;
 import se331.daybreaknews.dto.UpdateCommentVisibilityRequest;
 import se331.daybreaknews.dto.UpdateNewsVisibilityRequest;
 import se331.daybreaknews.dto.UpdateUserMemberRoleRequest;
+import se331.daybreaknews.dto.UpdateUserVerifiedStatusRequest;
 import se331.daybreaknews.dto.UserDTO;
 import se331.daybreaknews.service.CommentService;
 import se331.daybreaknews.service.NewsService;
@@ -42,6 +43,15 @@ public class AdminController {
             @RequestBody UpdateUserMemberRoleRequest request
     ) {
         return ResponseEntity.ok(userService.updateMemberRole(id, request.member()));
+    }
+
+    @PatchMapping("/users/{id}/verify")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDTO> updateUserVerifiedStatus(
+            @PathVariable Long id,
+            @RequestBody UpdateUserVerifiedStatusRequest request
+    ) {
+        return ResponseEntity.ok(userService.updateVerifiedStatus(id, request.verified()));
     }
 
     @GetMapping("/news")

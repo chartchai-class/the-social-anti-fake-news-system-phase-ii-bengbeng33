@@ -42,6 +42,16 @@ export const useAdminStore = defineStore("admin", {
       }
       return data;
     },
+    async toggleUserVerified(userId: number, verified: boolean) {
+      const { data } = await AdminService.updateUserVerified(userId, verified);
+      const index = this.users.findIndex((user) => user.id === data.id);
+      if (index >= 0) {
+        this.users.splice(index, 1, data);
+      } else {
+        this.users.push(data);
+      }
+      return data;
+    },
     async fetchNews() {
       this.loadingNews = true;
       try {
