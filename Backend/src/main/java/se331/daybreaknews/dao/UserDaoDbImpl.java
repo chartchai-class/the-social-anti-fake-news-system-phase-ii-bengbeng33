@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.repository.UserRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -42,5 +43,10 @@ public class UserDaoDbImpl implements UserDao {
     @Override
     public User save(User user) {
         return userRepository.save(user);
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userRepository.findAll();
     }
 }

@@ -13,10 +13,12 @@ import java.time.LocalDateTime;
 public class CommentDTO {
     private Long id;
     private Long newsId;
+    private String newsTitle;
     private Long userId;
     private String username;
     private String text;
     private String imageUrl;
     private LocalDateTime createdAt;
     private VoteType voteType;
+    private boolean visible;
 }

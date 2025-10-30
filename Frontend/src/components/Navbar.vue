@@ -75,6 +75,14 @@
                   >
                     Fake
                   </router-link>
+                  <router-link
+                    v-if="isAdmin"
+                    to="/admin"
+                    class="px-4 py-3 hover:bg-indigo-50 text-indigo-700 font-medium transition-colors duration-200"
+                    @click="closeDropdown"
+                  >
+                    Admin Dashboard
+                  </router-link>
                 </template>
                 <div class="border-t border-gray-200 my-2"></div>
                 <template v-if="!isLoggedIn">
@@ -182,6 +190,18 @@
             >
               Fake
             </router-link>
+            <router-link
+              v-if="isAdmin"
+              to="/admin"
+              :class="[
+                'px-6 py-2 rounded-md text-lg font-medium transition-colors duration-200 w-36 text-center',
+                $route.path === '/admin'
+                  ? 'bg-white text-indigo-700'
+                  : 'text-white hover:text-orange-200 hover:bg-orange-600'
+              ]"
+            >
+              Admin
+            </router-link>
           </div>
           <!-- Auth Links -->
           <div class="flex items-center space-x-3 ml-4">
@@ -211,7 +231,7 @@
             </template>
             <template v-else>
               <span class="text-white font-semibold max-w-[160px] truncate">
-                {{ currentUser?.username }}
+                @ {{ currentUser?.username }}
               </span>
               <button
                 @click="handleLogout"
@@ -266,7 +286,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { User } from '@/types'
 
@@ -350,6 +370,10 @@ watch(() => route.path, closeDropdown)
 // Auth state and logout handler
 const isLoggedIn = ref<boolean>(false)
 const currentUser = ref<User | null>(null)
+const isAdmin = computed(() => {
+  const roles = currentUser.value?.roles
+  return Array.isArray(roles) ? roles.includes('ADMIN') : false
+})
 
 function refreshAuthState() {
   const rawUser = localStorage.getItem('user')

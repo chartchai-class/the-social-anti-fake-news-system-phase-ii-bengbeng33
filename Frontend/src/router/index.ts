@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { User } from '@/types'
 import HomeView from '../views/HomeView.vue'
 import NewsDetailView from '../views/NewsDetailView.vue'
 import FactView from '../views/FactView.vue'
@@ -37,6 +38,12 @@ const routes = [
     name: 'news-detail',
     component: NewsDetailView,
     props: true
+  },
+  {
+    path: '/admin',
+    name: 'admin-dashboard',
+    component: () => import('../views/AdminDashboardView.vue'),
+    meta: { requiresAdmin: true }
   }
 ]
 
@@ -49,16 +56,34 @@ const router = createRouter({
 router.beforeEach((to) => {
   const publicPaths = ['/login', '/register']
   const isPublic = publicPaths.includes(to.path)
-  const user = localStorage.getItem('user')
+  const rawUser = localStorage.getItem('user')
+  let parsedUser: User | null = null
+
+  if (rawUser) {
+    try {
+      parsedUser = JSON.parse(rawUser) as User
+    } catch (error) {
+      console.warn('Unable to parse stored user', error)
+      localStorage.removeItem('user')
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+    }
+  }
 
   // If not logged in and trying to access a protected route, redirect to login
-  if (!user && !isPublic) {
+  if (!parsedUser && !isPublic) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }
 
   // If logged in and going to login/register, redirect to home
-  if (user && isPublic) {
+  if (parsedUser && isPublic) {
     return { path: '/' }
+  }
+
+  if (to.meta.requiresAdmin) {
+    if (!parsedUser || !parsedUser.roles?.includes('ADMIN')) {
+      return { path: '/', replace: true }
+    }
   }
 
   return true

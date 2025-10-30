@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -20,6 +21,16 @@ public class CommentDaoDbImpl implements CommentDao {
     }
 
     @Override
+    public List<Comment> findAllOrderByCreatedAtDesc() {
+        return commentRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Override
+    public Optional<Comment> findById(Long id) {
+        return commentRepository.findById(id);
+    }
+
+    @Override
     public Comment save(Comment comment) {
         return commentRepository.save(comment);
     }
@@ -29,4 +40,3 @@ public class CommentDaoDbImpl implements CommentDao {
         commentRepository.deleteById(id);
     }
 }
-

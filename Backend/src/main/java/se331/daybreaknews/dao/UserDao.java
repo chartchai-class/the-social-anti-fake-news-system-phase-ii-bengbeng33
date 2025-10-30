@@ -2,6 +2,7 @@ package se331.daybreaknews.dao;
 
 import se331.daybreaknews.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserDao {
@@ -12,5 +13,5 @@ public interface UserDao {
     boolean existsByEmail(String email);
     boolean existsByUsername(String username);
     User save(User user);
+    List<User> findAll();
 }
-

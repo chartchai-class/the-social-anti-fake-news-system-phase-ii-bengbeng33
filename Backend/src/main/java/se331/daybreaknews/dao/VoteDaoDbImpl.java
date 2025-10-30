@@ -23,7 +23,7 @@ public class VoteDaoDbImpl implements VoteDao {
 
     @Override
     public Long countByNewsIdAndVoteType(Long newsId, VoteType voteType) {
-        return voteRepository.countByNewsIdAndVoteType(newsId, voteType);
+        return voteRepository.countByNewsIdAndVoteTypeAndCommentVisibleTrue(newsId, voteType);
     }
 
     @Override
