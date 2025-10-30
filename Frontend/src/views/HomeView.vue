@@ -92,17 +92,30 @@
             </p>
           </div>
 
-          <!-- Image URL -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Image URL (optional)</label
-            >
-            <input
-              v-model="newNews.imageUrl"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
+          <!-- Image URL or Upload -->
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Image URL (optional)</label
+              >
+              <input
+                v-model="newNews.imageUrl"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1"
+                >Or upload image</label
+              >
+              <div class="flex items-center gap-4">
+                <input id="news-image-upload" type="file" accept="image/*" @change="handleNewsImageUpload"
+                       class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <img v-if="newsImagePreview" :src="newsImagePreview" alt="preview" class="w-16 h-16 object-cover rounded" />
+              </div>
+              <p class="text-xs text-gray-500 mt-1">If both are provided, the uploaded image will be used.</p>
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
@@ -162,6 +175,7 @@ import NewsBoxes from "@/components/NewsBoxes.vue";
 import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
 import type { NewsItem, User } from "@/types";
+import apiClient from "@/services/apiClient";
 
 interface Props {
   itemsPerPage?: number;
@@ -186,6 +200,24 @@ const newNews = ref({
   description: "",
   imageUrl: "",
 });
+
+const newsImageFile = ref<File | null>(null);
+const newsImagePreview = ref<string | null>(null);
+
+function handleNewsImageUpload(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0] ?? null;
+  newsImageFile.value = file;
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      newsImagePreview.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    newsImagePreview.value = null;
+  }
+}
 
 function loadCurrentUser() {
   const raw = localStorage.getItem("user");
@@ -294,12 +326,30 @@ async function addNews() {
     if (loadingProgress.value >= 100) {
       clearInterval(interval);
 
-      // Add news to store with null status (Unverified) and 0/0 votes
+      // If file selected, upload to backend first
+      let finalImageUrl: string | undefined = undefined;
+      try {
+        if (newsImageFile.value) {
+          const formData = new FormData();
+          formData.append("file", newsImageFile.value);
+          formData.append("folder", "news-images");
+          const { data } = await apiClient.post<{ url: string }>(
+            "/api/upload/image",
+            formData
+          );
+          finalImageUrl = data.url;
+        }
+      } catch (e) {
+        console.warn("Failed to upload news image, falling back to provided URL", e);
+      }
+
+      // Add news to store with null status (Unverified)
       await newsStore.addNews({
         title: newNews.value.topic,
         content: newNews.value.description,
         reporter: reporterName,
         imageUrl:
+          finalImageUrl ||
           newNews.value.imageUrl ||
           `https://picsum.photos/id/${Math.floor(Math.random() * 200) + 100}/800/400`,
         status: null, // Automatically set to Unverified
@@ -311,6 +361,8 @@ async function addNews() {
         description: "",
         imageUrl: "",
       };
+      newsImageFile.value = null;
+      newsImagePreview.value = null;
       showAddNewsModal.value = false;
 
       setTimeout(() => {
