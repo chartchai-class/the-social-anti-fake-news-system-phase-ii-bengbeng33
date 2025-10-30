@@ -1,62 +1,94 @@
 <template>
-  <div class="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+  <div>
     <!-- Background Effects -->
     <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-0 right-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 left-0 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl"></div>
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gray-800/40 rounded-full blur-3xl"></div>
+      <!-- Reddish-orange glow at top right -->
+      <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500/30 rounded-full blur-3xl"></div>
+      <!-- Purplish-pink glow at bottom left -->
+      <div class="absolute bottom-0 left-0 w-96 h-96 bg-pink-500/30 rounded-full blur-3xl"></div>
     </div>
 
     <!-- Register Form Container -->
     <div class="relative z-10 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div class="w-full max-w-4xl">
-        <!-- Frosted Glass Form -->
-        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-2xl border border-gray-200/50 p-8 sm:p-12">
-          <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-8">Register</h1>
+      <div class="w-full max-w-4xl mx-auto">
+        <!-- Frosted Glass Form (Glassmorphism) -->
+        <div class="bg-gray-100/20 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-300/50 p-8 sm:p-12">
+          <h1 class="text-4xl sm:text-5xl font-bold text-black font-shadow-lg font-shodow-white text-shadow-lg mb-8">Register</h1>
           
           <form @submit.prevent="handleRegister" class="space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <!-- Name -->
-              <div>
-                <input
-                  v-model="form.name"
-                  type="text"
-                  required
-                  placeholder="Name"
-                  class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                />
-              </div>
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <!-- Column 1: Input Fields (Left - 2/3) -->
+              <div class="md:col-span-2 space-y-6">
+                <!-- Name and Surname Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <!-- Name -->
+                  <div>
+                    <input
+                      v-model="form.name"
+                      type="text"
+                      required
+                      placeholder="Name"
+                      class="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    />
+                  </div>
   
-              <!-- Surname -->
-              <div>
-                <input
-                  v-model="form.surname"
-                  type="text"
-                  required
-                  placeholder="Surname"
-                  class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
+                  <!-- Surname -->
+                  <div>
+                    <input
+                      v-model="form.surname"
+                      type="text"
+                      required
+                      placeholder="Surname"
+                      class="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+
+                <!-- Email -->
+                <div>
+                  <input
+                    v-model="form.email"
+                    type="email"
+                    required
+                    placeholder="Email Address"
+                    class="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  />
+                </div>
   
-            <div class="flex gap-6">
-              <!-- Email -->
-              <div class="flex-1">
-                <input
-                  v-model="form.email"
-                  type="email"
-                  required
-                  placeholder="Email Address"
-                  class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                />
+                <!-- Password -->
+                <div>
+                  <input
+                    v-model="form.password"
+                    type="password"
+                    required
+                    placeholder="Password"
+                    class="w-full px-4 py-3 bg-gray-100 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  />
+                </div>
+
+                <!-- Confirm Password -->
+                <div>
+                  <input
+                    v-model="form.confirmPassword"
+                    type="password"
+                    required
+                    placeholder="Confirm Password"
+                    class="w-full h-20 px-4 py-3 bg-gray-100 rounded-xl border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  />
+                  <p v-if="passwordMismatch" class="mt-2 text-sm text-red-500">
+                    Passwords do not match
+                  </p>
+                </div>
               </div>
 
-              <!-- Profile Picture Upload -->
-              <div class="flex items-start justify-center ml-4">
+              <!-- Column 2: Profile Picture and Sign Up Button (Right - 1/3) -->
+              <div class="md:col-span-1 flex flex-col items-center justify-start space-y-6">
+                <!-- Profile Picture Upload -->
                 <div class="relative">
                   <label
                     for="profile-upload"
-                    class="cursor-pointer flex flex-col items-center justify-center w-32 h-32 bg-gray-100 rounded-full border-2 border-black hover:bg-gray-200 transition-colors"
+                    class="cursor-pointer flex flex-col items-center justify-center w-40 h-40 bg-gray-100 rounded-full border-2 border-gray-700 hover:bg-gray-200 transition-colors shadow-lg"
                   >
                     <input
                       id="profile-upload"
@@ -65,67 +97,53 @@
                       @change="handleProfileUpload"
                       class="hidden"
                     />
-                    <svg
-                      v-if="!profilePreview"
-                      class="w-12 h-12 text-gray-600 mb-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    <div class="relative flex flex-col items-center justify-center w-full h-full">
+                      <svg
+                        v-if="!profilePreview"
+                        class="w-12 h-12 text-gray-700"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                        />
+                      </svg>
+                      <img
+                        v-else
+                        :src="profilePreview"
+                        alt="Profile preview"
+                        class="w-28 h-28 rounded-full object-cover"
                       />
-                    </svg>
-                    <img
-                      v-else
-                      :src="profilePreview"
-                      alt="Profile preview"
-                      class="w-28 h-28 rounded-full object-cover"
-                    />
-                    <svg
-                      class="w-5 h-5 text-gray-900 mt-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M7 11l5-5m0 0l5 5m-5-5v12"
-                      />
-                    </svg>
+                      <!-- Upload arrow icon at bottom right -->
+                      <div class="absolute bottom-0 right-0 w-6 h-6 bg-gray-700 rounded-full flex items-center justify-center">
+                        <svg
+                          class="w-4 h-4 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M7 11l5-5m0 0l5 5m-5-5v12"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                   </label>
                 </div>
+
+                <!-- Sign Up Button -->
+                <button
+                  type="submit"
+                  :disabled="isSubmitting || passwordMismatch"
+                  class="w-full h-20 px-8 py-3 bg-gray-300 text-gray-900 rounded-xl font-bold shadow-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span v-if="!isSubmitting">Sign Up</span>
+                  <span v-else>Signing Up...</span>
+                </button>
               </div>
-            </div>
-  
-            <!-- Password -->
-            <div>
-              <input
-                v-model="form.password"
-                type="password"
-                required
-                placeholder="Password"
-                class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-              />
-            </div>
-  
-            <!-- Confirm Password -->
-            <div>
-              <input
-                v-model="form.confirmPassword"
-                type="password"
-                required
-                placeholder="Confirm Password"
-                class="w-full px-4 py-3 bg-gray-100 rounded-lg border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-              />
-              <p v-if="passwordMismatch" class="mt-2 text-sm text-red-500">
-                Passwords do not match
-              </p>
             </div>
   
             <!-- Error Message -->
@@ -133,27 +151,15 @@
               {{ errorMessage }}
             </div>
   
-            <!-- Sign Up Button and Login Link -->
-            <div class="flex items-center justify-between pt-4">
-              <button
-                type="submit"
-                :disabled="isSubmitting || passwordMismatch"
-                class="px-8 py-3 bg-gray-300 text-gray-900 rounded-lg font-medium hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            <!-- Login Link (Full Width) -->
+            <div class="text-white text-center">
+              Already have an account?
+              <router-link
+                to="/login"
+                class="font-bold text-gray-900 hover:text-orange-500 transition-colors underline ml-1"
               >
-                <span v-if="!isSubmitting">Sign Up</span>
-                <span v-else>Signing Up...</span>
-              </button>
-
-              <!-- Login Link -->
-              <div class="text-gray-900">
-                Already have an account?
-                <router-link
-                  to="/login"
-                  class="font-bold text-gray-900 hover:text-orange-500 transition-colors underline"
-                >
-                  Log In
-                </router-link>
-              </div>
+                Log In
+              </router-link>
             </div>
           </form>
         </div>
@@ -234,5 +240,8 @@ async function handleRegister() {
 
 <style scoped>
 /* Additional styles if needed */
+.text-shadow-lg {
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
 </style>
   
