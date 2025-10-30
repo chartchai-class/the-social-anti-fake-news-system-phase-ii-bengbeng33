@@ -5,10 +5,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import se331.daybreaknews.dao.UserDao;
-import se331.daybreaknews.dto.LoginRequest;
-import se331.daybreaknews.dto.RegisterRequest;
+import se331.daybreaknews.dto.UserRegisterRequestDTO;
 import se331.daybreaknews.dto.UserDTO;
 import se331.daybreaknews.entity.User;
+import se331.daybreaknews.entity.UserRole;
 
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO register(RegisterRequest request) {
+    public UserDTO register(UserRegisterRequestDTO request) {
         if (userDao.existsByEmail(normalizeEmail(request.getEmail()))) {
             throw new IllegalArgumentException("Email is already in use");
         }
@@ -36,23 +36,10 @@ public class UserServiceImpl implements UserService {
                 .email(normalizeEmail(request.getEmail()))
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .build();
+        user.getRoles().add(UserRole.READER);
 
         User saved = userDao.save(user);
         return toDTO(saved);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public UserDTO login(LoginRequest request) {
-        String email = normalizeEmail(request.getEmail());
-        User user = userDao.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password"));
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid email or password");
-        }
-
-        return toDTO(user);
     }
 
     @Override
@@ -79,6 +66,7 @@ public class UserServiceImpl implements UserService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())
+                .roles(user.getRoles())
                 .build();
     }
 
@@ -109,4 +97,3 @@ public class UserServiceImpl implements UserService {
         return email == null ? null : email.trim().toLowerCase();
     }
 }
-

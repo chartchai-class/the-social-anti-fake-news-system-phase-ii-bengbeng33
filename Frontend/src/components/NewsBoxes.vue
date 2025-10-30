@@ -51,7 +51,7 @@
 
             <!-- Status image -->
             <img
-              :src="getStatusImage((n.currentStatus || n.status) as Status)"
+              :src="getStatusImage(n.currentStatus ?? n.status ?? 'UNVERIFIED')"
               alt="status"
               class="w-[100px] h-[100px] sm:w-[100px] sm:h-[100px] md:w-[110px] md:h-[110px] lg:w-[120px] lg:h-[120px] object-contain"
             />
@@ -64,6 +64,7 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
+import type { NewsItem, Status } from "@/types";
 
 type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
 

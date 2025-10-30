@@ -296,7 +296,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 
@@ -308,6 +308,7 @@ interface Props {
 
 const props = defineProps<Props>();
 const route = useRoute();
+const router = useRouter();
 const newsStore = useNewsStore();
 newsStore.initializeAuthSync();
 
@@ -522,6 +523,13 @@ const voteOptionClass = (choice: VoteChoice) => {
 };
 
 const openModal = async () => {
+  if (!currentUser.value) {
+    await router.push({
+      path: "/login",
+      query: { redirect: route.fullPath },
+    });
+    return;
+  }
   modalError.value = "";
   await updateUserVoteStatus();
   syncSelectedVote();

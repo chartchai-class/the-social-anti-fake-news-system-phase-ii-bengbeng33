@@ -1,5 +1,7 @@
 export type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
 
+export type UserRole = "READER" | "MEMBER" | "ADMIN";
+
 export interface NewsItem {
   id: number;
   title: string;
@@ -41,4 +43,5 @@ export interface User {
   username: string;
   email: string;
   createdAt: string;
+  roles?: UserRole[];
 }

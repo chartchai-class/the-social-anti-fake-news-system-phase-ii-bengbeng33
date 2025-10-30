@@ -1,20 +1,9 @@
-import axios from "axios";
 import type { Comment } from "@/types";
-
-const BASE_URL = `${import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080"}/api`;
-
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: false,
-  headers: {
-    Accept: "application/json",
-    "Content-Type": "application/json",
-  },
-});
+import apiClient from "@/services/apiClient";
 
 export default {
   async getComments(newsId: number) {
-    return apiClient.get<Comment[]>(`/comments/${newsId}`);
+    return apiClient.get<Comment[]>(`/api/comments/${newsId}`);
   },
 
   async createComment(
@@ -26,10 +15,10 @@ export default {
       voteType: "FAKE" | "FACT";
     }
   ) {
-    return apiClient.post<Comment>("/comments", { newsId, ...comment });
+    return apiClient.post<Comment>("/api/comments", { newsId, ...comment });
   },
 
   async deleteComment(id: number) {
-    return apiClient.delete<void>(`/comments/${id}`);
+    return apiClient.delete<void>(`/api/comments/${id}`);
   },
 };

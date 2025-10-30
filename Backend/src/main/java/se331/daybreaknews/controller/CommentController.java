@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class CommentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('READER','MEMBER','ADMIN')")
     public ResponseEntity<?> createComment(@Valid @RequestBody CommentDTO dto) {
         try {
             CommentDTO comment = commentService.createComment(dto);
@@ -36,6 +38,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteComment(@PathVariable Long id) {
         commentService.deleteComment(id);
         return ResponseEntity.noContent().build();

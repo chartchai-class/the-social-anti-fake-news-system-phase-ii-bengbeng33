@@ -1,14 +1,4 @@
-import axios from "axios";
-
-const BASE_URL = `${import.meta.env.VITE_BACKEND_URL ?? "http://localhost:8080"}/api`;
-
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  withCredentials: false,
-  headers: {
-    Accept: "application/json",
-  },
-});
+import apiClient from "@/services/apiClient";
 
 export interface UploadResponse {
   url: string;
@@ -22,7 +12,7 @@ export default {
     formData.append("folder", folder);
 
     const response = await apiClient.post<UploadResponse>(
-      "/upload/image",
+      "/api/upload/image",
       formData,
       {
         headers: {
@@ -40,7 +30,7 @@ export default {
     formData.append("folder", folder);
 
     const response = await apiClient.post<UploadResponse>(
-      "/upload/file",
+      "/api/upload/file",
       formData,
       {
         headers: {
@@ -53,9 +43,8 @@ export default {
   },
 
   async deleteFile(fileUrl: string): Promise<void> {
-    await apiClient.delete("/upload", {
+    await apiClient.delete("/api/upload", {
       params: { url: fileUrl },
     });
   },
 };
-
