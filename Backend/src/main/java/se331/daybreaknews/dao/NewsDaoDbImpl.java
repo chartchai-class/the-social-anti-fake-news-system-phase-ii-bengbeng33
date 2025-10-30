@@ -30,6 +30,21 @@ public class NewsDaoDbImpl implements NewsDao {
     }
 
     @Override
+    public List<News> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(String q1, String q2) {
+        return newsRepository.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(q1, q2);
+    }
+
+    @Override
+    public List<News> findByStatusAndTitleContainingIgnoreCase(NewsStatus status, String q) {
+        return newsRepository.findByStatusAndTitleContainingIgnoreCase(status, q);
+    }
+
+    @Override
+    public List<News> findByStatusAndContentContainingIgnoreCase(NewsStatus status, String q) {
+        return newsRepository.findByStatusAndContentContainingIgnoreCase(status, q);
+    }
+
+    @Override
     public News save(News news) {
         return newsRepository.save(news);
     }

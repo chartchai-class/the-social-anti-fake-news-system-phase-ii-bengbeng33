@@ -4,7 +4,6 @@ import se331.daybreaknews.dto.NewsDTO;
 import se331.daybreaknews.entity.NewsStatus;
 import se331.daybreaknews.service.NewsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -33,5 +32,12 @@ public class NewsController {
     @GetMapping("/status/{status}")
     public ResponseEntity<List<NewsDTO>> getNewsByStatus(@PathVariable NewsStatus status) {
         return ResponseEntity.ok(newsService.getNewsByStatus(status));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<NewsDTO>> searchNews(
+            @RequestParam(name = "q", required = false) String q
+    ) {
+        return ResponseEntity.ok(newsService.searchNews(q));
     }
 }

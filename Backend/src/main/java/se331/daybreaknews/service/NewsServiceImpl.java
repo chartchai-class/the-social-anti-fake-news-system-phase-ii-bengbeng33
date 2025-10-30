@@ -41,6 +41,38 @@ public class NewsServiceImpl implements NewsService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<NewsDTO> searchNews(String query) {
+        String q = query == null ? "" : query.trim();
+        if (q.isEmpty()) {
+            return getAllNews();
+        }
+
+        // Search title/content first
+        List<News> results = newsDao
+                .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(q, q);
+
+        // If query equals a status word, include status results as well
+        NewsStatus status = null;
+        for (NewsStatus s : NewsStatus.values()) {
+            if (s.name().equalsIgnoreCase(q)) {
+                status = s;
+                break;
+            }
+        }
+        if (status != null) {
+            List<News> byStatus = newsDao.findByStatus(status);
+            for (News n : byStatus) {
+                if (results.stream().noneMatch(x -> x.getId().equals(n.getId()))) {
+                    results.add(n);
+                }
+            }
+        }
+
+        return results.stream().map(this::enrichWithVotes).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public NewsDTO getNewsById(Long id) {
         News news = newsDao.getNews(id);
         if (news == null) {
@@ -107,7 +139,7 @@ public class NewsServiceImpl implements NewsService {
         dto.setSummary(news.getSummary());
         dto.setContent(news.getContent());
         long fakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FAKE);
-        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.NOT_FAKE);
+        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FACT);
 
         dto.setStatus(resolveStatus(news, fakeVotes, notFakeVotes));
         dto.setReporter(news.getReporter());
@@ -127,7 +159,7 @@ public class NewsServiceImpl implements NewsService {
             return NewsStatus.FAKE;
         }
         if (notFakeVotes > fakeVotes) {
-            return NewsStatus.NOT_FAKE;
+            return NewsStatus.FACT;
         }
         return NewsStatus.UNVERIFIED;
     }

@@ -8,6 +8,7 @@ public interface NewsService {
     List<NewsDTO> getAllNews();
     NewsDTO getNewsById(Long id);
     List<NewsDTO> getNewsByStatus(NewsStatus status);
+    List<NewsDTO> searchNews(String query);
     NewsDTO createNews(NewsDTO dto);
     NewsDTO updateNews(Long id, NewsDTO dto);
     void deleteNews(Long id);

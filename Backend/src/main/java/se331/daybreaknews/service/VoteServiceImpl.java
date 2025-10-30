@@ -78,12 +78,12 @@ public class VoteServiceImpl implements VoteService {
     @Override
     @Transactional(readOnly = true)
     public long getNotFakeVotes(Long newsId) {
-        return voteDao.countByNewsIdAndVoteType(newsId, VoteType.NOT_FAKE);
+        return voteDao.countByNewsIdAndVoteType(newsId, VoteType.FACT);
     }
 
     private void updateNewsStatus(News news) {
         long fakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FAKE);
-        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.NOT_FAKE);
+        long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FACT);
 
         NewsStatus newStatus;
         if (fakeVotes == 0 && notFakeVotes == 0) {
@@ -91,7 +91,7 @@ public class VoteServiceImpl implements VoteService {
         } else if (fakeVotes > notFakeVotes) {
             newStatus = NewsStatus.FAKE;
         } else if (notFakeVotes > fakeVotes) {
-            newStatus = NewsStatus.NOT_FAKE;
+            newStatus = NewsStatus.FACT;
         } else {
             newStatus = NewsStatus.UNVERIFIED;
         }

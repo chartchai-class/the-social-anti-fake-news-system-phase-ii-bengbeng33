@@ -7,7 +7,7 @@ import type { Comment, NewsItem, Status, User } from "@/types";
 interface CommentData {
   text: string;
   imageUrl?: string;
-  voteType: "FAKE" | "NOT_FAKE";
+  voteType: "FAKE" | "FACT";
 }
 
 function getStoredUser(): User | null {
@@ -42,7 +42,7 @@ function deriveStatus(
     return "FAKE";
   }
   if (notFakeVotes > fakeVotes) {
-    return "NOT_FAKE";
+    return "FACT";
   }
   return "UNVERIFIED";
 }
@@ -68,6 +68,7 @@ export const useNewsStore = defineStore("news", {
 
     // Loading states
     isLoading: false,
+    authSyncInitialized: false,
   }),
 
   getters: {
@@ -148,7 +149,7 @@ export const useNewsStore = defineStore("news", {
       },
 
     // Get news with updated vote counts
-    getNewsWithCurrentVotes: (state) => (): NewsItem[] => {
+    getNewsWithCurrentVotes: (state): NewsItem[] => {
       return state.allNews.map((news) => ({
         ...news,
         currentStatus: deriveStatus(
@@ -165,11 +166,9 @@ export const useNewsStore = defineStore("news", {
       if (typeof window === "undefined") {
         return;
       }
-      if ((this as any)._authSyncInitialized) {
-        return;
-      }
-      (this as any)._authSyncInitialized = true;
-      window.addEventListener("auth-changed", () => {
+      if (this.authSyncInitialized) return;
+      this.authSyncInitialized = true;
+      globalThis.window.addEventListener("auth-changed", () => {
         this.userVotes.clear();
         this.clearCache();
       });
@@ -183,6 +182,18 @@ export const useNewsStore = defineStore("news", {
         this.allNews = data;
       } catch (error) {
         console.error("Error fetching news:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async searchNews(query?: string) {
+      this.isLoading = true;
+      try {
+        const { data } = await NewsService.searchNews(query);
+        this.allNews = data;
+      } catch (error) {
+        console.error("Error searching news:", error);
       } finally {
         this.isLoading = false;
       }
@@ -209,7 +220,14 @@ export const useNewsStore = defineStore("news", {
     // Add new news item
     async addNews(newsData: NewNewsData) {
       try {
-        const { data: newNews } = await NewsService.createNews(newsData as any);
+        const payload = {
+          title: newsData.title,
+          content: newsData.content,
+          reporter: newsData.reporter,
+          imageUrl: newsData.imageUrl,
+          ...(newsData.status ? { status: newsData.status as string } : {}),
+        };
+        const { data: newNews } = await NewsService.createNews(payload);
         this.allNews.unshift(newNews);
         return newNews;
       } catch (error) {

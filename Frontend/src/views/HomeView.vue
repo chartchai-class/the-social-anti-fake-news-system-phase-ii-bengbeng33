@@ -130,6 +130,24 @@
     </div>
 
     <div class="px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Simple Search Bar -->
+      <div class="max-w-4xl mx-auto mb-6">
+        <div class="flex gap-3 items-stretch">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Search by title, content, or type FAKE/FACT/UNVERIFIED"
+            class="flex-1 px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            @keyup.enter="performSearch"
+          />
+          <button
+            @click="performSearch"
+            class="px-5 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+          >
+            Search
+          </button>
+        </div>
+      </div>
       <NewsBoxes :items="paginatedNews" />
       <div class="mt-6 flex justify-center">
         <PageNav v-model="currentPage" :total="totalPages" />
@@ -169,7 +187,7 @@ const newNews = ref({
   imageUrl: "",
 });
 
-function loadCurrentUser(_event?: Event) {
+function loadCurrentUser() {
   const raw = localStorage.getItem("user");
   if (!raw) {
     currentUser.value = null;
@@ -188,13 +206,13 @@ onMounted(async () => {
   loadCurrentUser();
   simulateLoading();
   await newsStore.fetchAllNews();
-  window.addEventListener("storage", loadCurrentUser);
-  window.addEventListener("auth-changed", loadCurrentUser);
+  globalThis.addEventListener("storage", loadCurrentUser);
+  globalThis.addEventListener("auth-changed", loadCurrentUser);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("storage", loadCurrentUser);
-  window.removeEventListener("auth-changed", loadCurrentUser);
+  globalThis.removeEventListener("storage", loadCurrentUser);
+  globalThis.removeEventListener("auth-changed", loadCurrentUser);
 });
 
 function simulateLoading() {
@@ -215,7 +233,7 @@ function simulateLoading() {
 }
 
 const allNews = computed((): NewsItem[] => {
-  return newsStore.getNewsWithCurrentVotes();
+  return newsStore.getNewsWithCurrentVotes;
 });
 
 const currentPage = ref(1);
@@ -240,6 +258,19 @@ const paginatedNews = computed((): NewsItem[] => {
   const start = (currentPage.value - 1) * props.itemsPerPage;
   return allNews.value.slice(start, start + props.itemsPerPage);
 });
+
+// Search state
+const searchQuery = ref("");
+
+async function performSearch() {
+  currentPage.value = 1;
+  const q = searchQuery.value.trim();
+  if (!q) {
+    await newsStore.fetchAllNews();
+  } else {
+    await newsStore.searchNews(q);
+  }
+}
 
 async function addNews() {
   const reporterName = currentUser.value?.username;
