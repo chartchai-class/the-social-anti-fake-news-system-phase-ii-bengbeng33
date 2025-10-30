@@ -12,7 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/votes")
+@CrossOrigin(origins = "http://localhost:5173")
+@RequestMapping("/api/votes")
 @RequiredArgsConstructor
 public class VoteController {
     final VoteService voteService;
