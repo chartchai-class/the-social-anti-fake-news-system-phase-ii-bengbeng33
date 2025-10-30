@@ -5,22 +5,18 @@ spring:
     active: db
 
   datasource:
-    url: jdbc:h2:mem:fakenewsdb
-    driver-class-name: org.h2.Driver
-    username: sa
+    url: jdbc:mysql://localhost:3307/daybreakdb?createDatabaseIfNotExist=true&autoReconnect=true&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
     password: password
-    
-
+  
   jpa:
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: create-drop
   
-  h2:
-    console:
-      enabled: true 
   servlet:
     multipart:
       max-file-size: 10MB
