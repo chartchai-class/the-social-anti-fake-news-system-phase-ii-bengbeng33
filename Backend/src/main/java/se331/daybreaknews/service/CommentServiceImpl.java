@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,9 +30,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentDTO createComment(CommentDTO dto) {
         Comment comment = new Comment();
         comment.setNewsId(dto.getNewsId());
-        comment.setUser(dto.getUser() != null && !dto.getUser().isEmpty() ? dto.getUser() : "Anonymous");
+        comment.setUsername(dto.getUsername());
         comment.setText(dto.getText());
         comment.setImageUrl(dto.getImageUrl());
+        comment.setCreatedAt(LocalDateTime.now());
         
         Comment saved = commentDao.save(comment);
         return entityToDTO(saved);
@@ -47,11 +49,10 @@ public class CommentServiceImpl implements CommentService {
         CommentDTO dto = new CommentDTO();
         dto.setId(comment.getId());
         dto.setNewsId(comment.getNewsId());
-        dto.setUser(comment.getUser());
+        dto.setUsername(comment.getUsername());
         dto.setText(comment.getText());
         dto.setImageUrl(comment.getImageUrl());
         dto.setCreatedAt(comment.getCreatedAt());
         return dto;
     }
 }
-

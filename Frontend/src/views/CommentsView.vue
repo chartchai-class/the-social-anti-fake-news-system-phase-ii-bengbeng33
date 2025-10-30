@@ -73,7 +73,7 @@
                   >Username</label
                 >
                 <input
-                  v-model="newComment.user"
+                  v-model="newComment.username"
                   type="text"
                   placeholder="Enter your username"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -131,13 +131,13 @@
             class="bg-gray-200 rounded-lg p-4"
           >
             <!-- Username -->
-            <div class="font-medium text-gray-900 mb-2">{{ comment.user }}</div>
+            <div class="font-medium text-gray-900 mb-2">{{ comment.username }}</div>
 
             <!-- Comment Image (if exists) -->
             <img
               v-if="comment.imageUrl"
               :src="comment.imageUrl"
-              :alt="`Image by ${comment.user}`"
+              :alt="`Image by ${comment.username}`"
               class="h-48 object-contain rounded-lg mb-3"
             />
 
@@ -229,7 +229,7 @@ onMounted(async () => {
 // Add comment modal state
 const showAddComment = ref(false);
 const newComment = ref({
-  user: "",
+  username: "",
   text: "",
   imageUrl: "",
 });
@@ -238,7 +238,7 @@ const newComment = ref({
 async function addComment() {
   if (newComment.value.text.trim()) {
     const createdComment = await newsStore.addComment(newsId.value, {
-      user: newComment.value.user || "Anonymous",
+      username: newComment.value.username || "Anonymous",
       text: newComment.value.text,
       imageUrl: newComment.value.imageUrl || undefined,
     });
@@ -247,7 +247,7 @@ async function addComment() {
     comments.value.unshift(createdComment);
 
     // Reset form and close modal
-    newComment.value = { user: "", text: "", imageUrl: "" };
+    newComment.value = { username: "", text: "", imageUrl: "" };
     showAddComment.value = false;
   }
 }

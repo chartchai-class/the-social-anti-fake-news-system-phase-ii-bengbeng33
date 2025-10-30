@@ -20,7 +20,7 @@ interface NewsItem {
 
 interface Comment {
   id: number;
-  user: string;
+  username: string;
   text: string;
   imageUrl?: string;
   createdAt: string;
@@ -29,7 +29,7 @@ interface Comment {
 interface CommentData {
   text: string;
   imageUrl?: string;
-  user?: string;
+  username?: string;
 }
 
 interface NewNewsData {

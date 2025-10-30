@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,6 +55,7 @@ public class NewsServiceImpl implements NewsService {
         news.setReporter(dto.getReporter());
         news.setImageUrl(dto.getImageUrl());
         news.setStatus(NewsStatus.UNVERIFIED);
+        news.setReportedAt(LocalDateTime.now());
         
         if (dto.getSummary() == null || dto.getSummary().isEmpty()) {
             news.setSummary(dto.getContent().length() > 100 ? 
@@ -109,4 +111,3 @@ public class NewsServiceImpl implements NewsService {
         return dto;
     }
 }
-

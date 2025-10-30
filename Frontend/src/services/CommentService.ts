@@ -19,7 +19,7 @@ export default {
 
   async createComment(
     newsId: number,
-    comment: { user?: string; text: string; imageUrl?: string }
+    comment: { username?: string; text: string; imageUrl?: string }
   ) {
     return apiClient.post<Comment>("/comments", { newsId, ...comment });
   },
@@ -28,5 +28,4 @@ export default {
     return apiClient.delete<void>(`/comments/${id}`);
   },
 };
-
 

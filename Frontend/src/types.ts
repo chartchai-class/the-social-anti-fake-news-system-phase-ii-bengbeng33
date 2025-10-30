@@ -15,7 +15,7 @@ export interface NewsItem {
 
 export interface Comment {
   id: number;
-  user: string;
+  username: string;
   text: string;
   imageUrl?: string;
   createdAt: string;

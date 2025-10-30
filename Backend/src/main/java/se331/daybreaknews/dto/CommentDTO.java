@@ -12,9 +12,8 @@ import java.time.LocalDateTime;
 public class CommentDTO {
     private Long id;
     private Long newsId;
-    private String user;
+    private String username;
     private String text;
     private String imageUrl;
     private LocalDateTime createdAt;
 }
-

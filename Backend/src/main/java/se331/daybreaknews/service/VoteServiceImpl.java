@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -33,6 +34,7 @@ public class VoteServiceImpl implements VoteService {
         vote.setNewsId(dto.getNewsId());
         vote.setVoteType(dto.getVoteType());
         vote.setUserIdentifier(dto.getUserIdentifier());
+        vote.setCreatedAt(LocalDateTime.now());
         
         Vote saved = voteDao.save(vote);
         return entityToDTO(saved);
