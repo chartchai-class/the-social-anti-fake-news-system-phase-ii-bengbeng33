@@ -92,22 +92,11 @@
             </p>
           </div>
 
-          <!-- Image URL or Upload -->
+          <!-- Image Upload -->
           <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Image URL (optional)</label
-              >
-              <input
-                v-model="newNews.imageUrl"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Or upload image</label
+                >Upload image</label
               >
               <div class="flex items-center gap-4">
                 <input id="news-image-upload" type="file" accept="image/*" @change="handleNewsImageUpload"

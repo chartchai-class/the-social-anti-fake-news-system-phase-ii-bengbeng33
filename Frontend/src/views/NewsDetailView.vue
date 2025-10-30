@@ -220,16 +220,15 @@
             ></textarea>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Image URL (optional)</label
-            >
-            <input
-              v-model="newComment.imageUrl"
-              type="url"
-              placeholder="https://example.com/image.jpg"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
+          <div class="space-y-3">
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Or upload image</label>
+              <div class="flex items-center gap-4">
+                <input type="file" accept="image/*" @change="handleCommentImageUpload" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
+              </div>
+            </div>
           </div>
 
           <div>
@@ -299,6 +298,7 @@ import { computed, onMounted, onUnmounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
+import apiClient from "@/services/apiClient";
 
 type VoteChoice = "FAKE" | "FACT";
 
@@ -327,6 +327,24 @@ const newComment = reactive({
   text: "",
   imageUrl: "",
 });
+
+const commentImageFile = ref<File | null>(null);
+const commentImagePreview = ref<string | null>(null);
+
+function handleCommentImageUpload(event: Event) {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0] ?? null;
+  commentImageFile.value = file;
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      commentImagePreview.value = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    commentImagePreview.value = null;
+  }
+}
 
 function loadCurrentUser() {
   const raw = localStorage.getItem("user");
@@ -567,9 +585,21 @@ async function submitComment() {
 
   isSubmitting.value = true;
   try {
+    // If file selected, upload first
+    let finalImageUrl: string | undefined = undefined;
+    if (commentImageFile.value) {
+      const formData = new FormData();
+      formData.append("file", commentImageFile.value);
+      formData.append("folder", "comment-images");
+      const { data } = await apiClient.post<{ url: string }>(
+        "/api/upload/image",
+        formData
+      );
+      finalImageUrl = data.url;
+    }
     await newsStore.addComment(numericNewsId.value, {
       text: newComment.text,
-      imageUrl: newComment.imageUrl || undefined,
+      imageUrl: finalImageUrl || newComment.imageUrl || undefined,
       voteType: effectiveVote,
     });
 
@@ -581,6 +611,8 @@ async function submitComment() {
     syncSelectedVote();
     newComment.text = "";
     newComment.imageUrl = "";
+    commentImageFile.value = null;
+    commentImagePreview.value = null;
     modalError.value = "";
     closeModal();
   } catch (error) {
