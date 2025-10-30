@@ -3,7 +3,6 @@ package se331.daybreaknews.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import se331.daybreaknews.service.SupabaseStorageService;
@@ -21,7 +20,6 @@ public class FileUploadController {
     private final SupabaseStorageService supabaseStorageService;
 
     @PostMapping("/image")
-    @PreAuthorize("permitAll()")
     public ResponseEntity<Map<String, String>> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "images") String folder) {
@@ -54,7 +52,6 @@ public class FileUploadController {
     }
 
     @PostMapping("/file")
-    @PreAuthorize("hasAnyRole('MEMBER','ADMIN')")
     public ResponseEntity<Map<String, String>> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "files") String folder) {
@@ -78,19 +75,5 @@ public class FileUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-    @DeleteMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("url") String fileUrl) {
-        try {
-            supabaseStorageService.deleteFile(fileUrl);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "File deleted successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to delete file: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
 }
+

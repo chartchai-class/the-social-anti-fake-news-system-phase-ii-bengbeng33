@@ -26,6 +26,9 @@ supabase:
   anon-key: ${SUPABASE_ANON_KEY}
   service-key: ${SUPABASE_SERVICE_KEY}
   bucket-name: ${SUPABASE_BUCKET_NAME:news-images}
+  storage:
+    bucket: ${SUPABASE_BUCKET_NAME:news-images}
+    endpoint_output: https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public
 
 application:
   security:
