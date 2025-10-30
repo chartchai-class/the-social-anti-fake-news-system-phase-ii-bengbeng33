@@ -90,30 +90,60 @@
                   </div>
                 </div>
                 <div class="flex flex-col items-end gap-4 sm:flex-row sm:items-center">
-                  <span
-                    class="text-sm font-semibold uppercase tracking-tight"
-                    :class="roleLabelClass(user)"
-                  >
-                    {{ computeRoleLabel(user) }}
-                  </span>
-                  <button
-                    class="relative flex h-10 w-20 items-center rounded-full border border-white/10 transition-all duration-200"
-                    :class="{
-                      'bg-yellow-300 text-black shadow-lg shadow-yellow-400/30': isMember(user),
-                      'bg-white/15 text-white': !isMember(user),
-                      'opacity-60 cursor-not-allowed': isAdmin(user) || userProcessingId === user.id
-                    }"
-                    :disabled="isAdmin(user) || userProcessingId === user.id"
-                    @click="handleToggleUser(user)"
-                  >
+                  <div class="flex flex-col items-end gap-2">
                     <span
-                      class="absolute left-1 top-1 h-8 w-8 rounded-full bg-white transition-all duration-200"
-                      :class="isMember(user) ? 'translate-x-9 bg-yellow-600/80 shadow-lg shadow-yellow-500/50' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
-                    ></span>
-                    <span class="w-full text-center text-xs font-bold tracking-wide">
-                      {{ isMember(user) ? "ON" : "OFF" }}
+                      class="text-sm font-semibold uppercase tracking-tight"
+                      :class="roleLabelClass(user)"
+                    >
+                      {{ computeRoleLabel(user) }}
                     </span>
-                  </button>
+                    <span
+                      v-if="canBeVerified(user)"
+                      class="text-xs font-semibold uppercase tracking-tight"
+                      :class="isVerified(user) ? 'text-green-300' : 'text-gray-400'"
+                    >
+                      {{ isVerified(user) ? "✓ Verified" : "Unverified" }}
+                    </span>
+                  </div>
+                  <div class="flex flex-col gap-2 sm:flex-row">
+                    <button
+                      class="relative flex h-10 w-20 items-center rounded-full border border-white/10 transition-all duration-200"
+                      :class="{
+                        'bg-yellow-300 text-black shadow-lg shadow-yellow-400/30': isMember(user),
+                        'bg-white/15 text-white': !isMember(user),
+                        'opacity-60 cursor-not-allowed': isAdmin(user) || userProcessingId === user.id
+                      }"
+                      :disabled="isAdmin(user) || userProcessingId === user.id"
+                      @click="handleToggleUser(user)"
+                    >
+                      <span
+                        class="absolute left-1 top-1 h-8 w-8 rounded-full bg-white transition-all duration-200"
+                        :class="isMember(user) ? 'translate-x-9 bg-yellow-600/80 shadow-lg shadow-yellow-500/50' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
+                      ></span>
+                      <span class="w-full text-center text-xs font-bold tracking-wide">
+                        {{ isMember(user) ? "ON" : "OFF" }}
+                      </span>
+                    </button>
+                    <button
+                      v-if="canBeVerified(user)"
+                      class="relative flex h-10 w-24 items-center rounded-full border border-white/10 transition-all duration-200"
+                      :class="{
+                        'bg-green-400/80 text-black shadow-lg shadow-green-400/40': isVerified(user),
+                        'bg-white/15 text-white': !isVerified(user),
+                        'opacity-60 cursor-not-allowed': userVerifyProcessingId === user.id
+                      }"
+                      :disabled="userVerifyProcessingId === user.id"
+                      @click="handleToggleVerify(user)"
+                    >
+                      <span
+                        class="absolute left-1 top-1 h-8 w-8 rounded-full bg-white transition-all duration-200"
+                        :class="isVerified(user) ? 'translate-x-[68px] bg-green-600/80 shadow-lg shadow-green-500/50' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
+                      ></span>
+                      <span class="w-full text-center text-xs font-bold tracking-wide">
+                        {{ isVerified(user) ? "✓ VERIFIED" : "VERIFY" }}
+                      </span>
+                    </button>
+                  </div>
                 </div>
               </li>
             </ul>
@@ -230,8 +260,15 @@
                     </p>
                   </div>
                   <div class="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-gray-300/90">
-                    <span class="rounded-full bg-white/10 px-3 py-1">
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
                       {{ comment.username }}
+                      <span
+                        v-if="comment.userVerified"
+                        class="flex items-center justify-center h-4 w-4 rounded-full bg-green-500 text-white text-[10px]"
+                        title="Verified user"
+                      >
+                        ✓
+                      </span>
                     </span>
                     <span class="rounded-full bg-white/10 px-3 py-1">
                       {{ formatDateTime(comment.createdAt) }}
@@ -315,6 +352,7 @@ type TabKey = "users" | "news" | "comments";
 const activeTab = ref<TabKey>("users");
 const errorMessage = ref<string | null>(null);
 const userProcessingId = ref<number | null>(null);
+const userVerifyProcessingId = ref<number | null>(null);
 const newsProcessingId = ref<number | null>(null);
 const commentProcessingId = ref<number | null>(null);
 
@@ -404,6 +442,14 @@ function isAdmin(user: User): boolean {
   return user.roles?.includes("ADMIN") ?? false;
 }
 
+function isVerified(user: User): boolean {
+  return user.verified ?? false;
+}
+
+function canBeVerified(user: User): boolean {
+  return isMember(user) || isAdmin(user);
+}
+
 function computeRoleLabel(user: User): string {
   if (isAdmin(user)) return "Administrator";
   if (isMember(user)) return "Member";
@@ -453,6 +499,19 @@ async function handleToggleUser(user: User) {
     errorMessage.value = toMessage(err);
   } finally {
     userProcessingId.value = null;
+  }
+}
+
+async function handleToggleVerify(user: User) {
+  if (!canBeVerified(user)) return;
+  userVerifyProcessingId.value = user.id;
+  errorMessage.value = null;
+  try {
+    await store.toggleUserVerified(user.id, !isVerified(user));
+  } catch (err) {
+    errorMessage.value = toMessage(err);
+  } finally {
+    userVerifyProcessingId.value = null;
   }
 }
 

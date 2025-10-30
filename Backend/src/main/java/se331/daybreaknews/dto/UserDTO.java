@@ -18,4 +18,5 @@ public class UserDTO {
     private String profileImagePath;
     private LocalDateTime createdAt;
     private Set<UserRole> roles;
+    private boolean verified;
 }

@@ -14,4 +14,5 @@ public interface UserService {
     UserDTO toDTO(User user);
     List<UserDTO> getAllUsers();
     UserDTO updateMemberRole(Long userId, boolean makeMember);
+    UserDTO updateVerifiedStatus(Long userId, boolean verified);
 }

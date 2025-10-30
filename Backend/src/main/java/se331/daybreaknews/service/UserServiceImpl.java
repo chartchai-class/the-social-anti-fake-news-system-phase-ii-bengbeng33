@@ -72,6 +72,7 @@ public class UserServiceImpl implements UserService {
                 .profileImagePath(user.getProfileImagePath())
                 .createdAt(user.getCreatedAt())
                 .roles(user.getRoles())
+                .verified(user.isVerified())
                 .build();
     }
 
@@ -100,6 +101,23 @@ public class UserServiceImpl implements UserService {
             user.getRoles().remove(UserRole.MEMBER);
         }
         user.getRoles().add(UserRole.READER);
+
+        User saved = userDao.save(user);
+        return toDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO updateVerifiedStatus(Long userId, boolean verified) {
+        User user = userDao.getUser(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        // Only allow verification for members and admins
+        if (!user.getRoles().contains(UserRole.MEMBER) && !user.getRoles().contains(UserRole.ADMIN)) {
+            throw new IllegalArgumentException("Only members and admins can be verified");
+        }
+
+        user.setVerified(verified);
 
         User saved = userDao.save(user);
         return toDTO(saved);

@@ -5,6 +5,10 @@ interface ToggleMemberPayload {
   member: boolean;
 }
 
+interface UpdateVerifiedPayload {
+  verified: boolean;
+}
+
 interface UpdateVisibilityPayload {
   visible: boolean;
 }
@@ -17,6 +21,11 @@ export default {
   async updateUserMember(id: number, makeMember: boolean) {
     const payload: ToggleMemberPayload = { member: makeMember };
     return apiClient.patch<User>(`/api/admin/users/${id}/member`, payload);
+  },
+
+  async updateUserVerified(id: number, verified: boolean) {
+    const payload: UpdateVerifiedPayload = { verified };
+    return apiClient.patch<User>(`/api/admin/users/${id}/verify`, payload);
   },
 
   async getAllNews() {
