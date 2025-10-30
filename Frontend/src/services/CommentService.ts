@@ -23,7 +23,7 @@ export default {
       userId: number;
       text: string;
       imageUrl?: string;
-      voteType: "FAKE" | "NOT_FAKE";
+      voteType: "FAKE" | "FACT";
     }
   ) {
     return apiClient.post<Comment>("/comments", { newsId, ...comment });

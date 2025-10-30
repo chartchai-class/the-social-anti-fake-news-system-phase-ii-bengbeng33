@@ -51,7 +51,7 @@
 
             <!-- Status image -->
             <img
-              :src="getStatusImage(n.currentStatus || n.status)"
+              :src="getStatusImage((n.currentStatus || n.status) as Status)"
               alt="status"
               class="w-[100px] h-[100px] sm:w-[100px] sm:h-[100px] md:w-[110px] md:h-[110px] lg:w-[120px] lg:h-[120px] object-contain"
             />
@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 
-type Status = "FAKE" | "NOT_FAKE" | "UNVERIFIED" | null;
+type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
 
 interface NewsItem {
   id: number;
@@ -94,7 +94,7 @@ function goToNewsDetail(newsId: number) {
 
 function getStatusImage(s: Status) {
   if (s === "FAKE") return "/Fake.png";
-  if (s === "NOT_FAKE") return "/Fact.png";
+  if (s === "FACT") return "/Fact.png";
   return "/Equal.png";
 }
 

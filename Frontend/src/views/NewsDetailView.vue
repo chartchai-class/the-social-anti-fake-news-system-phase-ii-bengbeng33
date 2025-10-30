@@ -146,7 +146,7 @@
                   :class="voteBadgeClass(comment.voteType)"
                   class="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-bold uppercase rounded-full"
                 >
-                  {{ comment.voteType === "NOT_FAKE" ? "Fact" : "Fake" }}
+                  {{ comment.voteType === "FACT" ? "Fact" : "Fake" }}
                 </div>
               </div>
               <div class="text-sm text-gray-600">
@@ -239,8 +239,8 @@
             <div class="grid grid-cols-2 gap-4">
               <button
                 type="button"
-                :class="voteOptionClass('NOT_FAKE')"
-                @click="selectVote('NOT_FAKE')"
+                :class="voteOptionClass('FACT')"
+                @click="selectVote('FACT')"
               >
                 <img
                   src="/Fact.png"
@@ -300,7 +300,7 @@ import { useRoute } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 
-type VoteChoice = "FAKE" | "NOT_FAKE";
+type VoteChoice = "FAKE" | "FACT";
 
 interface Props {
   id: string;
@@ -327,7 +327,7 @@ const newComment = reactive({
   imageUrl: "",
 });
 
-function loadCurrentUser(_event?: Event) {
+function loadCurrentUser() {
   const raw = localStorage.getItem("user");
   if (!raw) {
     currentUser.value = null;
@@ -379,7 +379,7 @@ function getStoredVoteChoice(): VoteChoice | null {
     return null;
   }
   const stored = localStorage.getItem(key);
-  return stored === "FAKE" || stored === "NOT_FAKE" ? stored : null;
+  return stored === "FAKE" || stored === "FACT" ? stored : null;
 }
 
 function resolveVoteFromComments(): VoteChoice | null {
@@ -411,7 +411,7 @@ const currentStatusText = computed(() => {
   switch (currentStatus.value) {
     case "FAKE":
       return "FAKE";
-    case "NOT_FAKE":
+    case "FACT":
       return "FACT";
     default:
       return "UNVERIFIED";
@@ -422,7 +422,7 @@ const currentStatusImage = computed(() => {
   switch (currentStatus.value) {
     case "FAKE":
       return "/Fake.png";
-    case "NOT_FAKE":
+    case "FACT":
       return "/Fact.png";
     default:
       return "/Equal.png";
@@ -473,13 +473,13 @@ async function loadNewsDetail() {
 onMounted(() => {
   loadCurrentUser();
   loadNewsDetail();
-  window.addEventListener("storage", loadCurrentUser);
-  window.addEventListener("auth-changed", loadCurrentUser);
+  globalThis.addEventListener("storage", loadCurrentUser);
+  globalThis.addEventListener("auth-changed", loadCurrentUser);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("storage", loadCurrentUser);
-  window.removeEventListener("auth-changed", loadCurrentUser);
+  globalThis.removeEventListener("storage", loadCurrentUser);
+  globalThis.removeEventListener("auth-changed", loadCurrentUser);
 });
 
 watch(newsId, async () => {
@@ -492,12 +492,12 @@ watch(currentUser, async () => {
 });
 
 const commentCardClass = (voteType: VoteChoice) =>
-  voteType === "NOT_FAKE"
+  voteType === "FACT"
     ? "bg-green-50 border-green-300/70 hover:shadow-green-100"
     : "bg-red-50 border-red-300/70 hover:shadow-red-100";
 
 const voteBadgeClass = (voteType: VoteChoice) =>
-  voteType === "NOT_FAKE" ? "bg-green-600 text-white" : "bg-red-600 text-white";
+  voteType === "FACT" ? "bg-green-600 text-white" : "bg-red-600 text-white";
 
 const voteOptionClass = (choice: VoteChoice) => {
   const classes = [
@@ -511,7 +511,7 @@ const voteOptionClass = (choice: VoteChoice) => {
   ];
   if (selectedVote.value === choice) {
     classes.push(
-      choice === "NOT_FAKE"
+      choice === "FACT"
         ? "border-green-500 shadow-green-200/60 shadow-xl"
         : "border-red-500 shadow-red-200/60 shadow-xl"
     );

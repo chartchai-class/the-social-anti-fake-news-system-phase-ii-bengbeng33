@@ -10,4 +10,13 @@ import java.util.List;
 public interface NewsRepository extends JpaRepository<News, Long> {
     List<News> findByStatus(NewsStatus status);
     List<News> findAllByOrderByReportedAtDesc();
+
+    // Simple contains search (case-insensitive) on title or content
+    List<News> findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(String title, String content);
+
+    // Search by status and title
+    List<News> findByStatusAndTitleContainingIgnoreCase(NewsStatus status, String title);
+
+    // Search by status and content
+    List<News> findByStatusAndContentContainingIgnoreCase(NewsStatus status, String content);
 }

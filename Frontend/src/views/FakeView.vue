@@ -83,7 +83,7 @@ function simulateLoading() {
 
 const fakeNews = computed((): NewsItem[] => {
   return newsStore
-    .getNewsWithCurrentVotes()
+    .getNewsWithCurrentVotes
     .filter((item: NewsItem) => (item.currentStatus || item.status) === "FAKE");
 });
 
