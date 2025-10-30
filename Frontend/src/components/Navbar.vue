@@ -124,7 +124,7 @@
                     </button>
                     <div
                       v-if="paginationDropdownOpen"
-                      class="absolute right-0 -right-8 mt-2 w-48 bg-white rounded-lg shadow-lg border border-orange-200 z-50"
+                      class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-orange-200 z-50"
                     >
                       <div class="py-1">
                         <button
@@ -309,10 +309,13 @@ function closeDropdown() {
 // Close dropdown when clicking outside
 function handleClickOutside(event: Event) {
   const target = event.target as HTMLElement
-  if (!target.closest('.flex-shrink-0')) {
+  const insideMainTrigger = target.closest('.flex-shrink-0')
+  const insidePaginationControl = target.closest('.pagination-control')
+
+  if (!insideMainTrigger && !insidePaginationControl) {
     closeDropdown()
   }
-  if (!target.closest('.pagination-control')) {
+  if (!insidePaginationControl) {
     closePaginationDropdown()
   }
 }
@@ -366,6 +369,8 @@ function refreshAuthState() {
 
 function handleLogout() {
   localStorage.removeItem('user')
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
   currentUser.value = null
   refreshAuthState()
   closeDropdown()

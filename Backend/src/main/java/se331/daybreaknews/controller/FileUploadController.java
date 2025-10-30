@@ -3,6 +3,7 @@ package se331.daybreaknews.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import se331.daybreaknews.service.SupabaseStorageService;
@@ -20,6 +21,7 @@ public class FileUploadController {
     private final SupabaseStorageService supabaseStorageService;
 
     @PostMapping("/image")
+    @PreAuthorize("hasAnyRole('MEMBER','ADMIN')")
     public ResponseEntity<Map<String, String>> uploadImage(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "images") String folder) {
@@ -52,6 +54,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/file")
+    @PreAuthorize("hasAnyRole('MEMBER','ADMIN')")
     public ResponseEntity<Map<String, String>> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "folder", defaultValue = "files") String folder) {
@@ -77,6 +80,7 @@ public class FileUploadController {
     }
 
     @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, String>> deleteFile(@RequestParam("url") String fileUrl) {
         try {
             supabaseStorageService.deleteFile(fileUrl);
@@ -90,4 +94,3 @@ public class FileUploadController {
         }
     }
 }
-

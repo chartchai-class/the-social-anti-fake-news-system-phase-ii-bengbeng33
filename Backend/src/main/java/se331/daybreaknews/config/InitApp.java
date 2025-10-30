@@ -4,25 +4,50 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
+import se331.daybreaknews.entity.User;
+import se331.daybreaknews.entity.UserRole;
 import se331.daybreaknews.repository.NewsRepository;
+import se331.daybreaknews.repository.UserRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
     private final NewsRepository newsRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent event) {
+        seedDefaultAdmin();
         if (newsRepository.count() > 0) return; // already seeded
         seedHardcoded();
+    }
+
+    private void seedDefaultAdmin() {
+        if (userRepository.existsByEmailIgnoreCase("admin@dbn.com")) {
+            return;
+        }
+
+        User admin = User.builder()
+                .name("System")
+                .surname("Administrator")
+                .username("System Admin")
+                .email("admin@dbn.com")
+                .passwordHash(passwordEncoder.encode("123"))
+                .build();
+        admin.getRoles().addAll(Set.of(UserRole.READER, UserRole.MEMBER, UserRole.ADMIN));
+
+        userRepository.save(admin);
     }
 
     private void seedHardcoded() {

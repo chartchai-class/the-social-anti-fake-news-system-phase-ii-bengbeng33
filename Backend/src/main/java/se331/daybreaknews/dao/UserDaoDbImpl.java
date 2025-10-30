@@ -21,12 +21,12 @@ public class UserDaoDbImpl implements UserDao {
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return email == null ? Optional.empty() : userRepository.findByEmailIgnoreCase(email.trim());
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return username == null ? Optional.empty() : userRepository.findByUsernameIgnoreCase(username.trim());
     }
 
     @Override
@@ -44,4 +44,3 @@ public class UserDaoDbImpl implements UserDao {
         return userRepository.save(user);
     }
 }
-
