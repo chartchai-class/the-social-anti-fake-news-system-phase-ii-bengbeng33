@@ -223,9 +223,9 @@
           <div class="space-y-3">
             
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Or upload image</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Upload image</label>
               <div class="flex items-center gap-4">
-                <input type="file" accept="image/*" @change="handleCommentImageUpload" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <input type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); commentImageFile = f; commentImagePreview = f ? objectUrl(f) : null; }" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
               </div>
             </div>
@@ -331,20 +331,10 @@ const newComment = reactive({
 const commentImageFile = ref<File | null>(null);
 const commentImagePreview = ref<string | null>(null);
 
-function handleCommentImageUpload(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0] ?? null;
-  commentImageFile.value = file;
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      commentImagePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  } else {
-    commentImagePreview.value = null;
-  }
+function objectUrl(file: File): string {
+  return URL.createObjectURL(file);
 }
+
 
 function loadCurrentUser() {
   const raw = localStorage.getItem("user");
@@ -585,7 +575,6 @@ async function submitComment() {
 
   isSubmitting.value = true;
   try {
-    // If file selected, upload first
     let finalImageUrl: string | undefined = undefined;
     if (commentImageFile.value) {
       const formData = new FormData();

@@ -99,11 +99,10 @@
                 >Upload image</label
               >
               <div class="flex items-center gap-4">
-                <input id="news-image-upload" type="file" accept="image/*" @change="handleNewsImageUpload"
+                <input id="news-image-upload" type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); newsImageFile = f; newsImagePreview = f ? objectUrl(f) : null; }"
                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="newsImagePreview" :src="newsImagePreview" alt="preview" class="w-16 h-16 object-cover rounded" />
               </div>
-              <p class="text-xs text-gray-500 mt-1">If both are provided, the uploaded image will be used.</p>
             </div>
           </div>
 
@@ -193,19 +192,8 @@ const newNews = ref({
 const newsImageFile = ref<File | null>(null);
 const newsImagePreview = ref<string | null>(null);
 
-function handleNewsImageUpload(event: Event) {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0] ?? null;
-  newsImageFile.value = file;
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      newsImagePreview.value = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  } else {
-    newsImagePreview.value = null;
-  }
+function objectUrl(file: File): string {
+  return URL.createObjectURL(file);
 }
 
 function loadCurrentUser() {
