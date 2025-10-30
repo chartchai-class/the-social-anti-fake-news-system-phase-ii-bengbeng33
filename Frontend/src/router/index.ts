@@ -1,8 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import NewsDetailView from '../views/NewsDetailView.vue'
-import VoteView from '../views/VoteView.vue'
-import CommentsView from '../views/CommentsView.vue'
 import FactView from '../views/FactView.vue'
 import FakeView from '../views/FakeView.vue'
 import LoginView from '../views/LoginView.vue'
@@ -38,18 +36,6 @@ const routes = [
     path: '/news/:id',
     name: 'news-detail',
     component: NewsDetailView,
-    props: true
-  },
-  {
-    path: '/news/:id/vote',
-    name: 'vote',
-    component: VoteView,
-    props: true
-  },
-  {
-    path: '/news/:id/comments',
-    name: 'comments',
-    component: CommentsView,
     props: true
   }
 ]

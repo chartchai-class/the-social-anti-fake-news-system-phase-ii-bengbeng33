@@ -76,11 +76,14 @@
     </div>
   </template>
   
-  <script setup lang="ts">
+<script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import AuthService from '@/services/AuthService';
+import type { AxiosError } from 'axios';
 
 const router = useRouter();
+const route = useRoute();
 
 const form = ref({
   email: '',
@@ -95,21 +98,19 @@ async function handleLogin() {
   errorMessage.value = '';
 
   try {
-    // TODO: Implement actual login API call
-    // For now, just simulate a delay and redirect
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    
-    // Store user info (you can replace this with actual auth logic)
-    localStorage.setItem('user', JSON.stringify({
+    const { data } = await AuthService.login({
       email: form.value.email,
-    }));
-    // Notify other components (e.g., Navbar) that auth state changed
+      password: form.value.password,
+    });
+
+    localStorage.setItem('user', JSON.stringify(data));
     window.dispatchEvent(new Event('auth-changed'));
 
-    // Redirect to home page
-    router.push('/');
-  } catch {
-    errorMessage.value = 'Login failed. Please check your credentials and try again.';
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    await router.push(redirect);
+  } catch (err) {
+    const axiosError = err as AxiosError<{ error?: string }>;
+    errorMessage.value = axiosError.response?.data?.error ?? 'Login failed. Please check your credentials and try again.';
   } finally {
     isSubmitting.value = false;
   }

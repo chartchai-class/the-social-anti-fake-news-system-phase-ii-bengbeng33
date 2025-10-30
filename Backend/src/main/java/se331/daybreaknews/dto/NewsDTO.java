@@ -20,4 +20,6 @@ public class NewsDTO {
     private String reporter;
     private LocalDateTime reportedAt;
     private String imageUrl;
+    private Long fakeVotes;
+    private Long notFakeVotes;
 }

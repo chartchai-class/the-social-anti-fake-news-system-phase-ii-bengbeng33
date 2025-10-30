@@ -1,14 +1,26 @@
 package se331.daybreaknews.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "news")
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,32 +28,37 @@ import java.time.LocalDateTime;
 public class News {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "news_id")
     private Long id;
 
-    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "summary", columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String summary;
 
-    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private NewsStatus status;
 
-    @Column(name = "reporter", nullable = false)
     private String reporter;
 
-    @Column(name = "reported_at", nullable = false)
     private LocalDateTime reportedAt;
 
-    @Column(name = "image_url")
     private String imageUrl;
 
-    @PrePersist
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "news", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "news", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vote> votes = new ArrayList<>();
+
     protected void onCreate() {
         if (reportedAt == null) {
             reportedAt = LocalDateTime.now();

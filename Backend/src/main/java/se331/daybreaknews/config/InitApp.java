@@ -7,10 +7,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
-import se331.daybreaknews.entity.Vote;
-import se331.daybreaknews.entity.VoteType;
 import se331.daybreaknews.repository.NewsRepository;
-import se331.daybreaknews.repository.VoteRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,7 +17,6 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
     private final NewsRepository newsRepository;
-    private final VoteRepository voteRepository;
 
     @Override
     @Transactional
@@ -41,7 +37,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/101/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 12, 3);
 
         // #2: City Council Approves New Green Park
         n = News.builder()
@@ -53,7 +48,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/102/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 15);
 
         // #3: Schools to Introduce AI Tutors Next Semester
         n = News.builder()
@@ -65,7 +59,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/103/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 0);
 
         // #4: Rumors of Free Public Transport Go Viral
         n = News.builder()
@@ -77,7 +70,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/104/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 18, 5);
 
         // #5: Tech Company Launches Affordable Solar Panels
         n = News.builder()
@@ -89,7 +81,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/107/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 25);
 
         // #6: Mystery Animal Spotted in City Park
         n = News.builder()
@@ -101,7 +92,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/106/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 14, 14);
 
         // #7: New Restaurant Claims to Serve Alien Cuisine
         n = News.builder()
@@ -113,7 +103,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/108/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 22, 2);
 
         // #8: Local Library Receives Million-Dollar Donation
         n = News.builder()
@@ -125,7 +114,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/109/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 31);
 
         // #9: Weather App Predicts Snow in August
         n = News.builder()
@@ -137,7 +125,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/110/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 28, 3);
 
         // #10: City Announces Electric Bus Fleet Expansion
         n = News.builder()
@@ -149,7 +136,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/111/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 2, 19);
 
         // #11: Viral Video Claims Time Travel Discovery
         n = News.builder()
@@ -161,7 +147,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/112/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 45, 8);
 
         // #12: New Community Garden Opens Downtown
         n = News.builder()
@@ -173,7 +158,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/113/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 27);
 
         // #13: Social Media Post Claims Government Surveillance
         n = News.builder()
@@ -185,7 +169,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/114/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 33, 12);
 
         // #14: Local Artist Wins International Award
         n = News.builder()
@@ -197,7 +180,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/115/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 23);
 
         // #15: Rumor Spreads About Free Internet for All
         n = News.builder()
@@ -209,7 +191,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/116/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 19, 6);
 
         // #16: New Recycling Program Launches Successfully
         n = News.builder()
@@ -221,7 +202,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/117/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 18);
 
         // #17: Alien Abduction Claims Surface Online
         n = News.builder()
@@ -233,7 +213,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/118/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 52, 4);
 
         // #18: Local Hospital Receives Advanced MRI Machine
         n = News.builder()
@@ -245,7 +224,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/119/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 29);
 
         // #19: Viral Post Claims End of World Prediction
         n = News.builder()
@@ -257,7 +235,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/120/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 38, 7);
 
         // #20: New Bike Sharing Program Launches
         n = News.builder()
@@ -269,7 +246,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/121/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 22);
 
         // #21: Fake News About Celebrity Death Circulates
         n = News.builder()
@@ -281,7 +257,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/122/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 67, 9);
 
         // #22: Local Startup Wins Innovation Award
         n = News.builder()
@@ -293,7 +268,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/123/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 16);
 
         // #23: Hoax About Free Gasoline Spreads
         n = News.builder()
@@ -305,7 +279,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/124/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 24, 5);
 
         // #24: New Public Wi-Fi Network Installed
         n = News.builder()
@@ -317,7 +290,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/125/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 31);
 
         // #25: Fake Lottery Winner Announcement
         n = News.builder()
@@ -329,7 +301,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/126/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 41, 3);
 
         // #26: Local Food Bank Receives Major Donation
         n = News.builder()
@@ -341,7 +312,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/127/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 28);
 
         // #27: Viral Post Claims Government Secret Plan
         n = News.builder()
@@ -353,7 +323,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/128/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 29, 11);
 
         // #28: New Community Center Opens
         n = News.builder()
@@ -365,7 +334,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/129/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 19);
 
         // #29: Hoax About Free College Education
         n = News.builder()
@@ -377,7 +345,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/130/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 35, 8);
 
         // #30: Local Restaurant Wins National Award
         n = News.builder()
@@ -389,7 +356,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/131/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 24);
 
         // #31: Fake News About Water Contamination
         n = News.builder()
@@ -401,7 +367,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/132/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 43, 6);
 
         // #32: New Solar Farm Completed
         n = News.builder()
@@ -413,7 +378,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/133/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 26);
 
         // #33: Viral Post Claims Time Machine Invention
         n = News.builder()
@@ -425,7 +389,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/134/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 56, 4);
 
         // #34: New Public Art Installation Unveiled
         n = News.builder()
@@ -437,7 +400,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/135/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 21);
 
         // #35: Hoax About Free Smartphones
         n = News.builder()
@@ -449,7 +411,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/136/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 31, 7);
 
         // #36: Local Charity Breaks Fundraising Record
         n = News.builder()
@@ -461,7 +422,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/137/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 33);
 
         // #37: Fake News About Alien Contact
         n = News.builder()
@@ -473,7 +433,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/138/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 48, 5);
 
         // #38: New Electric Vehicle Charging Network
         n = News.builder()
@@ -485,7 +444,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/139/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 1, 25);
 
         // #39: Viral Post Claims Miracle Cure Discovery
         n = News.builder()
@@ -497,7 +455,6 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/140/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 39, 8);
 
         // #40: New Urban Farm Project Launches
         n = News.builder()
@@ -509,23 +466,5 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .imageUrl("https://picsum.photos/id/141/800/400")
                 .build();
         n = newsRepository.save(n);
-        createVotesForNews(n.getId(), 0, 20);
-    }
-
-    private void createVotesForNews(Long newsId, int fake, int notFake) {
-        for (int i = 0; i < fake; i++) {
-            Vote v = Vote.builder()
-                    .newsId(newsId)
-                    .voteType(VoteType.FAKE)
-                    .build();
-            voteRepository.save(v);
-        }
-        for (int i = 0; i < notFake; i++) {
-            Vote v = Vote.builder()
-                    .newsId(newsId)
-                    .voteType(VoteType.NOT_FAKE)
-                    .build();
-            voteRepository.save(v);
-        }
     }
 }

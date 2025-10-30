@@ -123,6 +123,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import AuthService from '@/services/AuthService';
+import type { AxiosError } from 'axios';
 
 const router = useRouter();
 
@@ -169,23 +171,20 @@ async function handleRegister() {
   errorMessage.value = '';
 
   try {
-    // TODO: Implement actual registration API call
-    // For now, just simulate a delay and redirect
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Store user info (you can replace this with actual auth logic)
-    localStorage.setItem('user', JSON.stringify({
+    const { data } = await AuthService.register({
       name: form.value.name,
       surname: form.value.surname,
       email: form.value.email,
-    }));
-    // Notify other components (e.g., Navbar) that auth state changed
+      password: form.value.password,
+    });
+
+    localStorage.setItem('user', JSON.stringify(data));
     window.dispatchEvent(new Event('auth-changed'));
 
-    // Redirect to home page
-    router.push('/');
-  } catch {
-    errorMessage.value = 'Registration failed. Please try again.';
+    await router.push('/');
+  } catch (err) {
+    const axiosError = err as AxiosError<{ error?: string }>;
+    errorMessage.value = axiosError.response?.data?.error ?? 'Registration failed. Please try again.';
   } finally {
     isSubmitting.value = false;
   }
