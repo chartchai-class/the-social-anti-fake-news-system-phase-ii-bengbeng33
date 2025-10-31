@@ -1,24 +1,18 @@
-# --- Step 1: Build the JAR ---
-FROM eclipse-temurin:21-jdk AS builder
+# ---- Step 1: Build the JAR ----
+FROM maven:3.9.9-eclipse-temurin-21 AS builder
 WORKDIR /app
 
-# Copy Maven wrapper and pom.xml first (to cache dependencies)
-COPY mvnw .
-COPY .mvn .mvn
+# Copy pom.xml first (cache dependencies)
 COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Download dependencies (so this layer can be cached)
-RUN ./mvnw dependency:go-offline
-
-# Copy the rest of the project and build
+# Copy source and build
 COPY src src
-RUN ./mvnw clean package -DskipTests
+RUN mvn clean package -DskipTests
 
-# --- Step 2: Run the app ---
+# ---- Step 2: Run the JAR ----
 FROM eclipse-temurin:21-jdk
 WORKDIR /app
-
-# Copy built JAR from builder stage
 COPY --from=builder /app/target/*.jar app.jar
 
 EXPOSE 8080
