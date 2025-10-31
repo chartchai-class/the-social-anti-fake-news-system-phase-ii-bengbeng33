@@ -2,7 +2,6 @@ package se331.daybreaknews.service;
 
 import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +25,7 @@ public class SupabaseStorageService {
         this.supabaseConfig = supabaseConfig;
         this.webClient = WebClient.builder()
                 .baseUrl(supabaseConfig.getUrl() + "/storage/v1")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseConfig.getServiceKey())
+                .defaultHeader("Authorization", "Bearer " + supabaseConfig.getServiceKey())
                 .defaultHeader("apikey", supabaseConfig.getServiceKey())
                 .build();
     }

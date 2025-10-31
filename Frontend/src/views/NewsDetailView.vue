@@ -208,7 +208,7 @@
           the overall tally.
         </p>
 
-        <form @submit.prevent="submitComment" class="space-y-4">
+        <form @submit.prevent="onSubmitComment" class="space-y-4">
           <div class="text-sm text-gray-600">
             Posting as
             <span class="font-semibold text-gray-800">
@@ -221,12 +221,12 @@
               >Comment</label
             >
             <textarea
-              v-model="newComment.text"
+              v-model="commentText"
               rows="4"
               placeholder="Write your comment..."
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              required
             ></textarea>
+            <p v-if="errorsComment.text" class="mt-1 text-sm text-red-600">{{ errorsComment.text }}</p>
           </div>
 
           <div class="space-y-3">
@@ -234,9 +234,10 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Upload image</label>
               <div class="flex items-center gap-4">
-                <input type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); commentImageFile = f; commentImagePreview = f ? objectUrl(f) : null; }" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <input type="file" accept="image/*" @change="handleCommentImageChange" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
               </div>
+              <p v-if="errorsComment.commentImage" class="mt-1 text-sm text-red-600">{{ errorsComment.commentImage }}</p>
             </div>
           </div>
 
@@ -276,9 +277,8 @@
             </div>
           </div>
 
-          <p v-if="modalError" class="text-sm text-red-600">
-            {{ modalError }}
-          </p>
+          <p v-if="errorsComment.vote" class="text-sm text-red-600">{{ errorsComment.vote }}</p>
+          <p v-if="modalError" class="text-sm text-red-600">{{ modalError }}</p>
 
           <div class="flex justify-end gap-3 pt-2">
             <button
@@ -308,6 +308,8 @@ import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 import apiClient from "@/services/apiClient";
+import * as yup from 'yup';
+import { useForm as useFormComment, useField as useFieldComment } from 'vee-validate';
 
 type VoteChoice = "FAKE" | "FACT";
 
@@ -337,11 +339,48 @@ const newComment = reactive({
   imageUrl: "",
 });
 
+// Comment form validation
+const validationSchemaComment = yup.object({
+  text: yup
+    .string()
+    .required('Please enter your comment.')
+    .test('maxWords', 'Comment must not exceed 200 words', (value) => {
+      if (!value) return true;
+      const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+      return words.length <= 200;
+    }),
+  vote: yup.mixed<'FAKE' | 'FACT'>().oneOf(['FAKE', 'FACT'], 'Please choose Fact or Fake.').required('Please choose Fact or Fake.'),
+  commentImage: yup
+    .mixed<File>()
+    .required('Please upload an image.')
+    .test('fileType', 'Image must be an image file', (value) => {
+      if (!value) return false;
+      return value instanceof File && value.type.startsWith('image/');
+    }),
+});
+
+const { errors: errorsComment, handleSubmit: handleSubmitComment, setFieldValue: setFieldValueComment } = useFormComment({
+  validationSchema: validationSchemaComment,
+  initialValues: { text: '', vote: undefined as unknown as 'FAKE' | 'FACT', commentImage: null as File | null }
+});
+
+const { value: commentText } = useFieldComment<string>('text');
+const { value: voteField } = useFieldComment<'FAKE' | 'FACT'>('vote');
+const { value: commentImage, setValue: setCommentImage } = useFieldComment<File | null>('commentImage');
+
 const commentImageFile = ref<File | null>(null);
 const commentImagePreview = ref<string | null>(null);
 
 function objectUrl(file: File): string {
   return URL.createObjectURL(file);
+}
+
+function handleCommentImageChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0] || null;
+  setCommentImage(file);
+  commentImageFile.value = file;
+  commentImagePreview.value = file ? objectUrl(file) : null;
 }
 
 
@@ -561,21 +600,11 @@ const closeModal = () => {
 
 const selectVote = (choice: VoteChoice) => {
   selectedVote.value = choice;
+  setFieldValueComment('vote', choice);
 };
 
-async function submitComment() {
+const onSubmitComment = handleSubmitComment(async (values) => {
   modalError.value = "";
-
-  if (!newComment.text.trim()) {
-    modalError.value = "Please enter your comment.";
-    return;
-  }
-
-  const effectiveVote = selectedVote.value;
-  if (!effectiveVote) {
-    modalError.value = "Please choose Fact or Fake.";
-    return;
-  }
 
   if (hasVoted.value) {
     modalError.value = "You have already shared your thoughts on this article.";
@@ -585,9 +614,9 @@ async function submitComment() {
   isSubmitting.value = true;
   try {
     let finalImageUrl: string | undefined = undefined;
-    if (commentImageFile.value) {
+    if (values.commentImage) {
       const formData = new FormData();
-      formData.append("file", commentImageFile.value);
+      formData.append("file", values.commentImage);
       formData.append("folder", "comment-images");
       const { data } = await apiClient.post<{ url: string }>(
         "/api/upload/image",
@@ -596,14 +625,14 @@ async function submitComment() {
       finalImageUrl = data.url;
     }
     await newsStore.addComment(numericNewsId.value, {
-      text: newComment.text,
+      text: values.text,
       imageUrl: finalImageUrl || newComment.imageUrl || undefined,
-      voteType: effectiveVote,
+      voteType: values.vote,
     });
 
     await newsStore.refreshUserVoteStatus(numericNewsId.value);
     hasVoted.value = true;
-    selectedVote.value = effectiveVote;
+    selectedVote.value = values.vote;
     await fetchVoteCounts();
     comments.value = await newsStore.getComments(numericNewsId.value);
     syncSelectedVote();
@@ -611,6 +640,7 @@ async function submitComment() {
     newComment.imageUrl = "";
     commentImageFile.value = null;
     commentImagePreview.value = null;
+    setCommentImage(null);
     modalError.value = "";
     closeModal();
   } catch (error) {
@@ -619,7 +649,7 @@ async function submitComment() {
   } finally {
     isSubmitting.value = false;
   }
-}
+});
 
 function formatDate(iso: string) {
   if (!iso) return "";

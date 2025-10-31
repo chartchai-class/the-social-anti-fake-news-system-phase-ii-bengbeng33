@@ -19,27 +19,28 @@
           </h1>
 
           
-          <form @submit.prevent="handleLogin" class="space-y-6">
+          <form class="space-y-6" @submit.prevent="onSubmit">
             <!-- Email -->
-            <div class="flex justify-center">
+            <div class="flex flex-col items-center gap-2">
               <input
-                v-model="form.email"
+                v-model="email"
                 type="email"
-                required
                 placeholder="Email Address"
+                @blur="handleEmailBlur"
                 class="w-[500px] h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               />
+              <p v-if="errors.email" class="text-sm text-red-600">{{ errors.email }}</p>
             </div>
-  
+
             <!-- Password -->
-            <div class="flex justify-center">
+            <div class="flex flex-col items-center gap-2">
               <input
-                v-model="form.password"
+                v-model="password"
                 type="password"
-                required
                 placeholder="Password"
                 class="w-[500px] h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               />
+              <p v-if="errors.password" class="text-sm text-red-600">{{ errors.password }}</p>
             </div>
   
             <!-- Sign In Button -->
@@ -81,26 +82,35 @@ import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import AuthService from '@/services/AuthService';
 import type { AxiosError } from 'axios';
+import * as yup from 'yup';
+import { useForm, useField } from 'vee-validate';
 
 const router = useRouter();
 const route = useRoute();
 
-const form = ref({
-  email: '',
-  password: '',
+const validationSchema = yup.object({
+  email: yup.string().required('The email is required').email('Invalid email address'),
+  password: yup.string().required('The password is required')
 });
+
+const { errors, handleSubmit } = useForm({
+  validationSchema,
+  initialValues: { email: '', password: '' },
+});
+
+const { value: email, handleBlur: handleEmailBlur } = useField<string>('email');
+const { value: password } = useField<string>('password');
 
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
-async function handleLogin() {
+const onSubmit = handleSubmit(async (values) => {
   isSubmitting.value = true;
   errorMessage.value = '';
-
   try {
     const { data } = await AuthService.login({
-      email: form.value.email,
-      password: form.value.password,
+      email: values.email,
+      password: values.password,
     });
 
     localStorage.setItem('user', JSON.stringify(data.user));
@@ -116,8 +126,8 @@ async function handleLogin() {
   } finally {
     isSubmitting.value = false;
   }
-  }
-  </script>
+});
+</script>
 
 <style scoped>
 /* Additional styles if needed */
