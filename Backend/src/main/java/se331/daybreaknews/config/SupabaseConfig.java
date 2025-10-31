@@ -13,6 +13,6 @@ public class SupabaseConfig {
     private String url;
     private String anonKey;
     private String serviceKey;
-    private String bucketName = "news-images";
+    private String bucketName = "images";
 }
 
