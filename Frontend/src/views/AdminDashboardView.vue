@@ -434,11 +434,29 @@ function initials(user: User): string {
 }
 
 function isMember(user: User): boolean {
-  return user.roles?.includes("MEMBER") ?? false;
+  if (!user.roles) {
+    return false;
+  }
+  for (const role of user.roles) {
+    const roleName = role?.toString();
+    if (roleName === "MEMBER" || roleName === "ROLE_MEMBER") {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isAdmin(user: User): boolean {
-  return user.roles?.includes("ADMIN") ?? false;
+  if (!user.roles) {
+    return false;
+  }
+  for (const role of user.roles) {
+    const roleName = role?.toString();
+    if (roleName === "ADMIN" || roleName === "ROLE_ADMIN") {
+      return true;
+    }
+  }
+  return false;
 }
 
 function isVerified(user: User): boolean {
@@ -518,8 +536,13 @@ async function handleToggleNews(news: NewsItem) {
   newsProcessingId.value = news.id;
   errorMessage.value = null;
   try {
-    const visible = isVisible(news);
-    await store.setNewsVisibility(news.id, !visible);
+    const currentlyVisible = isVisible(news);
+    // If we mark it invisible, only admins will see it; otherwise everyone can see it.
+    if (currentlyVisible) {
+      await store.setNewsVisibility(news.id, false);
+    } else {
+      await store.setNewsVisibility(news.id, true);
+    }
   } catch (err) {
     errorMessage.value = toMessage(err);
   } finally {
@@ -535,8 +558,14 @@ async function handleToggleComment(comment: Comment) {
   commentProcessingId.value = comment.id;
   errorMessage.value = null;
   try {
-    const visible = isCommentVisible(comment);
-    const updated = await store.setCommentVisibility(comment.id, !visible);
+    const currentlyVisible = isCommentVisible(comment);
+    // Invisible comments remain for admins only; visible comments appear for all readers.
+    let updated: Comment;
+    if (currentlyVisible) {
+      updated = await store.setCommentVisibility(comment.id, false);
+    } else {
+      updated = await store.setCommentVisibility(comment.id, true);
+    }
     await store.fetchNews();
     if (updated.newsId) {
       window.dispatchEvent(

@@ -1,6 +1,3 @@
 package se331.daybreaknews.dto;
 
-public record UpdateNewsVisibilityRequest(
-        boolean visible
-) {
-}
+public record UpdateNewsVisibilityRequest(boolean visible) {}

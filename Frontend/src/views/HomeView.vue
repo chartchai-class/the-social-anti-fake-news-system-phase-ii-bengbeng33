@@ -351,11 +351,11 @@ const onAddNews = handleSubmit(async (values) => {
           const formData = new FormData();
           formData.append("file", values.newsImage);
           formData.append("folder", "news-images");
-          const { data } = await apiClient.post<{ url: string }>(
+          const { data } = await apiClient.post<{ name: string }>(
             "/api/upload/image",
             formData
           );
-          finalImageUrl = data.url;
+          finalImageUrl = data.name;
         }
       } catch (e) {
         console.warn("Failed to upload news image", e);
