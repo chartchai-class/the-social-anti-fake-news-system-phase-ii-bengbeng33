@@ -1,7 +1,7 @@
 services:
   - type: web
     name: the-social-anti-fake-news-backend
-    env: java
+    env: docker
     rootDir: Backend
     buildCommand: ./mvnw clean package -DskipTests
     startCommand: java -jar target/*.jar
@@ -10,7 +10,7 @@ services:
     envVars:
       # === Database (Supabase PostgreSQL) ===
       - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://db.gdvmhaboyscqbpiwggrn.supabase.co:5432/postgres
+        value: jdbc:postgresql://db.gdvmhaboyscqbpiwggrq.supabase.co:5432/postgres
       - key: SPRING_DATASOURCE_USERNAME
         value: postgres
       - key: SPRING_DATASOURCE_PASSWORD
