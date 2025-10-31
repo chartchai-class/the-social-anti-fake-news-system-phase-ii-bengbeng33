@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: the-social-anti-fake-news-backend
+    env: java
+    rootDir: Backend
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    plan: free
+    autoDeploy: true
+    envVars:
+      # === Database (Supabase PostgreSQL) ===
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://db.gdvmhaboyscqbpiwggrn.supabase.co:5432/postgres
+      - key: SPRING_DATASOURCE_USERNAME
+        value: postgres
+      - key: SPRING_DATASOURCE_PASSWORD
+        value: MHl1BfMAq2WEQq3t
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+
+      # === Supabase Keys ===
+      - key: SUPABASE_URL
+        value: https://gdvmhaboyscqbpiwggrn.supabase.co
+      - key: SUPABASE_ANON_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdkdm1oYWJveXNjcWJwaXdnZ3JuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE3Mjk4NjEsImV4cCI6MjA3NzMwNTg2MX0.DLdgUTDHtAgKHLPYz87QvrgrqLpIj1DN9MWI96E3sAw
+      - key: SUPABASE_SERVICE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdkdm1oYWJveXNjcWJwaXdnZ3JuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTcyOTg2MSwiZXhwIjoyMDc3MzA1ODYxfQ.AGzMdiEtzn4gqdjp2IiPrx2mE2cTjM7UugVhD18vUnU
+      - key: SUPABASE_BUCKET_NAME
+        value: images
+      - key: SUPABASE_PROJECT_ID
+        value: gdvmhaboyscqbpiwggrn
+
+      # === Spring Boot Settings ===
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: 8080
+
+      # === CORS ===
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://the-social-anti-fake-news-system-ph-pi.vercel.app
