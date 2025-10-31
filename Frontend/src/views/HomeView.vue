@@ -51,19 +51,19 @@
       >
         <h3 class="text-2xl font-bold text-gray-900 mb-6">Add New News</h3>
 
-        <form @submit.prevent="addNews" class="space-y-4">
+        <form @submit.prevent="onAddNews" class="space-y-4">
           <!-- Topic -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
               >Topic *</label
             >
             <input
-              v-model="newNews.topic"
+              v-model="topic"
               type="text"
-              required
               placeholder="Enter news topic"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
+            <p v-if="errors.topic" class="mt-1 text-sm text-red-600">{{ errors.topic }}</p>
           </div>
 
           <!-- Description -->
@@ -72,12 +72,12 @@
               >Description *</label
             >
             <textarea
-              v-model="newNews.description"
+              v-model="description"
               rows="4"
-              required
               placeholder="Enter news description"
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
             ></textarea>
+            <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
           </div>
 
           <!-- Reporter -->
@@ -97,13 +97,14 @@
           <div class="space-y-3">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Upload image</label
+                >Upload image *</label
               >
               <div class="flex items-center gap-4">
-                <input id="news-image-upload" type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); newsImageFile = f; newsImagePreview = f ? objectUrl(f) : null; }"
+                <input id="news-image-upload" type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleNewsImageChange"
                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="newsImagePreview" :src="newsImagePreview" alt="preview" class="w-16 h-16 object-cover rounded" />
               </div>
+              <p v-if="errors.newsImage" class="mt-1 text-sm text-red-600">{{ errors.newsImage }}</p>
             </div>
           </div>
 
@@ -117,14 +118,10 @@
             </button>
             <button
               type="submit"
-              :disabled="
-                !newNews.topic.trim() ||
-                !newNews.description.trim() ||
-                !currentUser
-              "
+              :disabled="isSubmittingAdd || !currentUser"
               class="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Add News
+              {{ isSubmittingAdd ? 'Adding...' : 'Add News' }}
             </button>
           </div>
         </form>
@@ -165,6 +162,8 @@ import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
 import type { NewsItem, User } from "@/types";
 import apiClient from "@/services/apiClient";
+import * as yup from 'yup';
+import { useForm, useField } from 'vee-validate';
 import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 interface Props {
@@ -185,11 +184,42 @@ const loadingProgress = ref(0);
 // Add news modal state
 const showAddNewsModal = ref(false);
 const currentUser = ref<User | null>(null);
-const newNews = ref({
-  topic: "",
-  description: "",
-  imageUrl: "",
+const isSubmittingAdd = ref(false);
+const validationSchemaAdd = yup.object({
+  topic: yup
+    .string()
+    .required('Topic is required')
+    .max(30, 'Topic must not exceed 30 characters'),
+  description: yup
+    .string()
+    .required('Description is required')
+    .test('maxWords', 'Description must not exceed 200 words', (value) => {
+      if (!value) return true;
+      const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+      return words.length <= 200;
+    }),
+  newsImage: yup
+    .mixed<File>()
+    .required('Please upload an image.')
+    .test('fileType', 'Image must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
+    }),
 });
+
+const { errors, handleSubmit } = useForm({
+  validationSchema: validationSchemaAdd,
+  initialValues: { topic: '', description: '', newsImage: null as File | null }
+});
+
+const { value: topic } = useField<string>('topic');
+const { value: description } = useField<string>('description');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { value: newsImage, setValue: setNewsImage } = useField<File | null>('newsImage');
 const canCreateNews = computed(() => {
   const roles = currentUser.value?.roles ?? [];
   return roles.includes("ADMIN") || roles.includes("MEMBER");
@@ -200,6 +230,14 @@ const newsImagePreview = ref<string | null>(null);
 
 function objectUrl(file: File): string {
   return URL.createObjectURL(file);
+}
+
+function handleNewsImageChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0] || null;
+  setNewsImage(file);
+  newsImageFile.value = file;
+  newsImagePreview.value = file ? objectUrl(file) : null;
 }
 
 function loadCurrentUser() {
@@ -287,15 +325,12 @@ async function performSearch() {
   }
 }
 
-async function addNews() {
+const onAddNews = handleSubmit(async (values) => {
+  isSubmittingAdd.value = true;
   const reporterName = currentUser.value?.username;
 
-  if (
-    !newNews.value.topic.trim() ||
-    !newNews.value.description.trim() ||
-    !reporterName
-  ) {
-    console.warn("Missing required fields for adding news");
+  if (!reporterName) {
+    isSubmittingAdd.value = false;
     return;
   }
 
@@ -312,9 +347,9 @@ async function addNews() {
       // If file selected, upload to backend first
       let finalImageUrl: string | undefined = undefined;
       try {
-        if (newsImageFile.value) {
+        if (values.newsImage) {
           const formData = new FormData();
-          formData.append("file", newsImageFile.value);
+          formData.append("file", values.newsImage);
           formData.append("folder", "news-images");
           const { data } = await apiClient.post<{ url: string }>(
             "/api/upload/image",
@@ -323,29 +358,24 @@ async function addNews() {
           finalImageUrl = data.url;
         }
       } catch (e) {
-        console.warn("Failed to upload news image, falling back to provided URL", e);
+        console.warn("Failed to upload news image", e);
       }
 
       // Add news to store with null status (Unverified)
       await newsStore.addNews({
-        title: newNews.value.topic,
-        content: newNews.value.description,
+        title: values.topic,
+        content: values.description,
         reporter: reporterName,
-        imageUrl:
-          finalImageUrl ||
-          newNews.value.imageUrl ||
-          `https://picsum.photos/id/${Math.floor(Math.random() * 200) + 100}/800/400`,
+        imageUrl: finalImageUrl || `https://picsum.photos/id/${Math.floor(Math.random() * 200) + 100}/800/400`,
         status: null, // Automatically set to Unverified
       });
 
       // Reset form and close modal
-      newNews.value = {
-        topic: "",
-        description: "",
-        imageUrl: "",
-      };
+      topic.value = '';
+      description.value = '';
       newsImageFile.value = null;
       newsImagePreview.value = null;
+      setNewsImage(null);
       showAddNewsModal.value = false;
 
       setTimeout(() => {
@@ -354,5 +384,6 @@ async function addNews() {
       }, 200);
     }
   }, 100);
-}
+  isSubmittingAdd.value = false;
+});
 </script>

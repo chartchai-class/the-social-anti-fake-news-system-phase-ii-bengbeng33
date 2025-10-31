@@ -2,7 +2,6 @@ package se331.daybreaknews.service;
 
 import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +25,7 @@ public class SupabaseStorageService {
         this.supabaseConfig = supabaseConfig;
         this.webClient = WebClient.builder()
                 .baseUrl(supabaseConfig.getUrl() + "/storage/v1")
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + supabaseConfig.getServiceKey())
+                .defaultHeader("Authorization", "Bearer " + supabaseConfig.getServiceKey())
                 .defaultHeader("apikey", supabaseConfig.getServiceKey())
                 .build();
     }
@@ -37,7 +36,7 @@ public class SupabaseStorageService {
         // 1. Check for valid file name/existence
         if (fileName != null && !fileName.isEmpty() && fileName.contains(".")) {
             final String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-            String[] allowedExt = {"jpg", "jpeg", "png", "gif"};
+            String[] allowedExt = {"jpg", "jpeg", "png"};
 
             // 2. Check for allowed extensions
             for (String s : allowedExt) {
@@ -52,7 +51,7 @@ public class SupabaseStorageService {
             }
 
             // 3. If the loop finishes without a return, the file type is invalid
-            throw new ServletException("File must be an image (jpg, jpeg, png, gif).");
+            throw new ServletException("File must be an image (jpg, jpeg, or png).");
         }
 
         // 4. If the file name is null or empty, or no file was provided in the request

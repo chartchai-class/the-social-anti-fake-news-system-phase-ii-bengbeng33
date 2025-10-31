@@ -18,7 +18,7 @@
             Register
           </h1>
 
-          <form @submit.prevent="handleRegister" class="space-y-6">
+          <form @submit.prevent="onSubmit" class="space-y-6">
             <!-- Two Column Layout -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
               <!-- Column 1: Input Fields (Left - 2/3) -->
@@ -27,36 +27,38 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <!-- Name -->
                   <div>
-                    <input v-model="form.name" type="text" required placeholder="Name"
+                    <input v-model="name" type="text" placeholder="Name"
                       class="w-full h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
+                    <p v-if="errors.name" class="mt-2 text-sm text-red-500">{{ errors.name }}</p>
                   </div>
 
                   <!-- Surname -->
                   <div>
-                    <input v-model="form.surname" type="text" required placeholder="Surname"
+                    <input v-model="surname" type="text" placeholder="Surname"
                       class="w-full h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
+                    <p v-if="errors.surname" class="mt-2 text-sm text-red-500">{{ errors.surname }}</p>
                   </div>
                 </div>
 
                 <!-- Email -->
                 <div>
-                  <input v-model="form.email" type="email" required placeholder="Email Address"
+                  <input v-model="email" type="email" placeholder="Email Address" @blur="handleEmailBlur"
                     class="w-full h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
+                  <p v-if="errors.email" class="mt-2 text-sm text-red-500">{{ errors.email }}</p>
                 </div>
 
                 <!-- Password -->
                 <div>
-                  <input v-model="form.password" type="password" required placeholder="Password"
+                  <input v-model="password" type="password" placeholder="Password"
                     class="w-full h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
+                  <p v-if="errors.password" class="mt-2 text-sm text-red-500">{{ errors.password }}</p>
                 </div>
 
                 <!-- Confirm Password -->
                 <div>
-                  <input v-model="form.confirmPassword" type="password" required placeholder="Confirm Password"
+                  <input v-model="confirmPassword" type="password" placeholder="Confirm Password"
                     class="w-full h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" />
-                  <p v-if="passwordMismatch" class="mt-2 text-sm text-red-500">
-                    Passwords do not match
-                  </p>
+                  <p v-if="errors.confirmPassword" class="mt-2 text-sm text-red-500">{{ errors.confirmPassword }}</p>
                 </div>
               </div>
 
@@ -66,7 +68,7 @@
                 <div class="relative">
                   <label for="profile-upload"
                     class="cursor-pointer flex flex-col items-center justify-center w-40 h-40 bg-gray-100 rounded-full border-2 border-gray-700 hover:bg-gray-200 transition-colors shadow-lg">
-                    <input id="profile-upload" type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); profileFile = f; profilePreview = f ? objectUrl(f) : null; }"
+                    <input id="profile-upload" type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleProfileFileChange"
                       class="hidden" />
                     <div class="relative flex flex-col items-center justify-center w-full h-full">
                       <svg v-if="!profilePreview" class="w-12 h-12 text-gray-700" fill="currentColor"
@@ -86,10 +88,11 @@
                       </div>
                     </div>
                   </label>
+                  <p v-if="errors.profileFile" class="mt-2 text-sm text-red-500 text-center">{{ errors.profileFile }}</p>
                 </div>
 
                 <!-- Sign Up Button -->
-                <button type="submit" :disabled="isSubmitting || passwordMismatch" 
+                <button type="submit" :disabled="isSubmitting" 
                 class="w-[200px] h-[60px] px-8 py-3 bg-gray-300 text-gray-900 
                       text-2xl font-bold rounded-full shadow-lg 
                       hover:bg-gray-400 transition-colors duration-200 
@@ -121,23 +124,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AuthService from '@/services/AuthService';
 import apiClient from '@/services/apiClient';
 import type { AxiosError } from 'axios';
+import * as yup from 'yup';
+import { useForm, useField } from 'vee-validate';
 
 const router = useRouter();
 
-const form = ref({
-  name: '',
-  surname: '',
-  email: '',
-  password: '',
-  confirmPassword: '',
-});
-
-const profileFile = ref<File | null>(null);
 const profilePreview = ref<string | null>(null);
 function objectUrl(file: File): string {
   return URL.createObjectURL(file);
@@ -145,29 +141,79 @@ function objectUrl(file: File): string {
 const isSubmitting = ref(false);
 const errorMessage = ref('');
 
-const passwordMismatch = computed(() => {
-  return (
-    form.value.confirmPassword !== '' &&
-    form.value.password !== form.value.confirmPassword
-  );
+const validationSchema = yup.object({
+  name: yup
+    .string()
+    .required('Name is required')
+    .min(3, 'Name must be at least 3 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'Name must not contain numbers'),
+  surname: yup
+    .string()
+    .required('Surname is required')
+    .min(3, 'Surname must be at least 3 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'Surname must not contain numbers'),
+  email: yup
+    .string()
+    .required('The email is required')
+    .email('Invalid email address')
+    .test('has-at-and-dot', 'Email must contain @ and .', (value) => {
+      if (!value) return false;
+      return value.includes('@') && value.includes('.');
+    }),
+  password: yup
+    .string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters')
+    .matches(/[a-zA-Z]/, 'Password must contain at least one letter'),
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your password')
+    .oneOf([yup.ref('password')], 'Passwords do not match'),
+  profileFile: yup
+    .mixed<File>()
+    .required('Profile picture is required')
+    .test('fileType', 'Profile picture must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
+    })
+    .test('fileSize', 'Profile picture must be less than 5MB', (value) => {
+      if (!value) return false;
+      return value instanceof File && value.size <= 5 * 1024 * 1024; // 5MB
+    }),
 });
 
-// inline handler is used in template; dedicated function not needed
+const { errors, handleSubmit } = useForm({
+  validationSchema,
+  initialValues: { name: '', surname: '', email: '', password: '', confirmPassword: '', profileFile: null as File | null },
+});
 
-async function handleRegister() {
-  if (passwordMismatch.value) {
-    errorMessage.value = 'Passwords do not match';
-    return;
-  }
+const { value: name } = useField<string>('name');
+const { value: surname } = useField<string>('surname');
+const { value: email, handleBlur: handleEmailBlur } = useField<string>('email');
+const { value: password } = useField<string>('password');
+const { value: confirmPassword } = useField<string>('confirmPassword');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { value: profileFile, setValue: setProfileFile } = useField<File | null>('profileFile');
 
+function handleProfileFileChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0] || null;
+  setProfileFile(file);
+  profilePreview.value = file ? objectUrl(file) : null;
+}
+
+const onSubmit = handleSubmit(async (values) => {
   isSubmitting.value = true;
   errorMessage.value = '';
-
   try {
     let profileImagePath: string | undefined = undefined;
-    if (profileFile.value) {
+    if (values.profileFile) {
       const formData = new FormData();
-      formData.append('file', profileFile.value);
+      formData.append('file', values.profileFile);
       formData.append('folder', 'profile-images');
       const { data: uploadResp } = await apiClient.post<{ url: string }>(
         '/api/upload/image',
@@ -177,10 +223,10 @@ async function handleRegister() {
     }
 
     const { data } = await AuthService.register({
-      name: form.value.name,
-      surname: form.value.surname,
-      email: form.value.email,
-      password: form.value.password,
+      name: values.name,
+      surname: values.surname,
+      email: values.email,
+      password: values.password,
       profileImagePath,
     });
 
@@ -196,7 +242,7 @@ async function handleRegister() {
   } finally {
     isSubmitting.value = false;
   }
-}
+});
 </script>
 
 <style scoped>
