@@ -18,6 +18,7 @@ public class NewsDTO {
     private String content;
     private NewsStatus status;
     private String reporter;
+    private boolean reporterVerified;
     private LocalDateTime reportedAt;
     private String imageUrl;
     private Long fakeVotes;

@@ -50,7 +50,11 @@
               class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-600"
             >
               <div>
-                by <span class="font-medium">{{ newsItem.reporter }}</span>
+                by
+                <span class="font-medium inline-flex items-center gap-2">
+                  {{ newsItem.reporter }}
+                  <VerifiedBadge :verified="newsItem.reporterVerified" size="sm" />
+                </span>
                 <span class="mx-1">·</span>
                 <time :datetime="newsItem.reportedAt">
                   {{ formatDate(newsItem.reportedAt) }}
@@ -143,13 +147,7 @@
                   <span class="text-lg font-semibold text-gray-900">
                     {{ comment.username }}
                   </span>
-                  <span
-                    v-if="comment.userVerified"
-                    class="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 text-white text-xs"
-                    title="Verified user"
-                  >
-                    ✓
-                  </span>
+                  <VerifiedBadge :verified="comment.userVerified" size="sm" />
                 </div>
                 <div
                   :class="voteBadgeClass(comment.voteType)"
@@ -211,8 +209,9 @@
         <form @submit.prevent="submitComment" class="space-y-4">
           <div class="text-sm text-gray-600">
             Posting as
-            <span class="font-semibold text-gray-800">
+            <span class="font-semibold text-gray-800 inline-flex items-center gap-2">
               {{ currentUser?.username ?? "your account" }}
+              <VerifiedBadge :verified="currentUser?.verified" size="sm" />
             </span>
           </div>
 
@@ -308,6 +307,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 import apiClient from "@/services/apiClient";
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 type VoteChoice = "FAKE" | "FACT";
 

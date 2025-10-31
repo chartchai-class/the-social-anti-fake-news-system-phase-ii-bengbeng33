@@ -86,9 +86,10 @@
               >Reporter</label
             >
             <p
-              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 flex items-center gap-2"
             >
               {{ currentUser?.username ?? 'Unknown reporter' }}
+              <VerifiedBadge :verified="currentUser?.verified" size="sm" />
             </p>
           </div>
 
@@ -164,6 +165,7 @@ import PageNav from "@/components/PageNav.vue";
 import { useNewsStore } from "@/stores/news";
 import type { NewsItem, User } from "@/types";
 import apiClient from "@/services/apiClient";
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 interface Props {
   itemsPerPage?: number;

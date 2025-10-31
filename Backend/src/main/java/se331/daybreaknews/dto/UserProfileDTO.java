@@ -18,5 +18,5 @@ public class UserProfileDTO {
     private Set<UserRole> roles;
     private Long newsReportedCount;
     private Long commentedCount;
+    private boolean verified;
 }
-
