@@ -3,7 +3,6 @@ services:
     name: the-social-anti-fake-news-backend
     env: docker
     rootDir: Backend
-    buildCommand: ./mvnw clean package -DskipTests
     plan: free
     autoDeploy: true
     envVars:

@@ -1,14 +1,25 @@
-# Use OpenJDK 21
-FROM eclipse-temurin:21-jdk
-
-# Set working directory
+# --- Step 1: Build the JAR ---
+FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
 
-# Copy jar file built by Maven
-COPY target/*.jar app.jar
+# Copy Maven wrapper and pom.xml first (to cache dependencies)
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
 
-# Expose the port Spring Boot runs on
+# Download dependencies (so this layer can be cached)
+RUN ./mvnw dependency:go-offline
+
+# Copy the rest of the project and build
+COPY src src
+RUN ./mvnw clean package -DskipTests
+
+# --- Step 2: Run the app ---
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+
+# Copy built JAR from builder stage
+COPY --from=builder /app/target/*.jar app.jar
+
 EXPOSE 8080
-
-# Start the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
