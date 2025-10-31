@@ -44,6 +44,11 @@ const routes = [
     name: 'admin-dashboard',
     component: () => import('../views/AdminDashboardView.vue'),
     meta: { requiresAdmin: true }
+  },
+  {
+    path: '/profile',
+    name: 'user-profile',
+    component: () => import('../views/UserDetailView.vue')
   }
 ]
 

@@ -50,10 +50,13 @@
                 class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 flex flex-col xl:hidden border border-gray-200"
               >
                 <template v-if="isLoggedIn">
-                  <div class="px-4 py-2 text-xs uppercase tracking-wide text-gray-500">
+                  <router-link
+                    to="/profile"
+                    class="px-4 py-2 text-xs uppercase tracking-wide text-gray-500 hover:bg-gray-50 transition-colors"
+                  >
                     Signed in as
                     <span class="text-gray-700 font-semibold">{{ currentUser?.username }}</span>
-                  </div>
+                  </router-link>
                   <router-link
                     to="/"
                     class="px-4 py-3 hover:bg-orange-50 text-orange-700 font-medium transition-colors duration-200"
@@ -230,9 +233,12 @@
               </router-link>
             </template>
             <template v-else>
-              <span class="text-white font-semibold max-w-[160px] truncate">
+              <router-link
+                to="/profile"
+                class="text-white font-semibold max-w-[160px] truncate hover:text-orange-200 transition-colors duration-200 cursor-pointer"
+              >
                 @ {{ currentUser?.username }}
-              </span>
+              </router-link>
               <button
                 @click="handleLogout"
                 class="px-4 py-2 rounded-md text-sm font-medium bg-white/20 text-white hover:bg-white/30 transition-colors duration-200"

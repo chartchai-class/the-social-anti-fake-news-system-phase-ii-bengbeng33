@@ -20,4 +20,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
 
     // Search by status and content
     List<News> findByStatusAndContentContainingIgnoreCase(NewsStatus status, String content);
+
+    // Count news by reporter
+    long countByReporter(String reporter);
 }

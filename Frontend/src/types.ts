@@ -52,3 +52,15 @@ export interface User {
   roles?: UserRole[];
   verified?: boolean;
 }
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  surname: string;
+  username: string;
+  email: string;
+  profileImagePath?: string;
+  roles?: UserRole[];
+  newsReportedCount?: number;
+  commentedCount?: number;
+}
