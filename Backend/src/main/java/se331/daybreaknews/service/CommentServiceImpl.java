@@ -11,13 +11,14 @@ import se331.daybreaknews.entity.Vote;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +32,15 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public List<CommentDTO> getCommentsByNewsId(Long newsId) {
         boolean includeHidden = currentUserIsAdmin();
-        return commentDao.findByNewsId(newsId)
-                .stream()
-                .filter(comment -> includeHidden || comment.isVisible())
-                .map(this::entityToDTO)
-                .collect(Collectors.toList());
+        List<Comment> comments = commentDao.findByNewsId(newsId);
+        List<CommentDTO> output = new ArrayList<>();
+        for (Comment comment : comments) {
+            boolean canSee = includeHidden || comment.isVisible();
+            if (canSee) {
+                output.add(entityToDTO(comment));
+            }
+        }
+        return output;
     }
 
     @Override
@@ -88,10 +93,12 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(readOnly = true)
     public List<CommentDTO> getAllCommentsForAdmin() {
-        return commentDao.findAllOrderByCreatedAtDesc()
-                .stream()
-                .map(this::entityToDTO)
-                .collect(Collectors.toList());
+        List<Comment> comments = commentDao.findAllOrderByCreatedAtDesc();
+        List<CommentDTO> output = new ArrayList<>();
+        for (Comment comment : comments) {
+            output.add(entityToDTO(comment));
+        }
+        return output;
     }
 
     @Override
@@ -125,7 +132,11 @@ public class CommentServiceImpl implements CommentService {
         if (authentication == null || !authentication.isAuthenticated() || authentication instanceof AnonymousAuthenticationToken) {
             return false;
         }
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if ("ROLE_ADMIN".equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

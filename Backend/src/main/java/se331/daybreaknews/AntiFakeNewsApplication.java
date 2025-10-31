@@ -3,14 +3,11 @@ package se331.daybreaknews;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import se331.daybreaknews.config.SupabaseConfig;
 
 @SpringBootApplication
-@EnableConfigurationProperties(SupabaseConfig.class)
 public class AntiFakeNewsApplication {
     public static void main(String[] args) {
         // Load .env file before starting Spring Boot

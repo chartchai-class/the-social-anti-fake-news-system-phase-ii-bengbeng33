@@ -1,8 +1,7 @@
 import apiClient from "@/services/apiClient";
 
 export interface UploadResponse {
-  url: string;
-  message: string;
+  name: string;
 }
 
 export default {
@@ -21,30 +20,7 @@ export default {
       }
     );
 
-    return response.data.url;
-  },
-
-  async uploadFile(file: File, folder: string = "files"): Promise<string> {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", folder);
-
-    const response = await apiClient.post<UploadResponse>(
-      "/api/upload/file",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return response.data.url;
-  },
-
-  async deleteFile(fileUrl: string): Promise<void> {
-    await apiClient.delete("/api/upload", {
-      params: { url: fileUrl },
-    });
+    // The backend now follows the same pattern as the lab sheet and returns { name: "<url>" }.
+    return response.data.name;
   },
 };

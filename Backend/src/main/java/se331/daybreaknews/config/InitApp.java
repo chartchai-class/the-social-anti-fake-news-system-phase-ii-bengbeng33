@@ -6,7 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import se331.daybreaknews.entity.Comment;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
 import se331.daybreaknews.entity.User;
@@ -48,8 +47,8 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .surname("Administrator")
                 .username("System Admin")
                 .email("admin@dbn.com")
-                .passwordHash(passwordEncoder.encode("123"))
-                .profileImagePath("profile-images/system-admin.png")
+                .passwordHash(passwordEncoder.encode("admin123"))
+                .profileImagePath("https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public/images/profile-images/20251031202658874-admin profile.png")
                 .build();
         admin.getRoles().addAll(Set.of(UserRole.READER, UserRole.MEMBER, UserRole.ADMIN));
 

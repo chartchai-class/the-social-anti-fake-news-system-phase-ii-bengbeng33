@@ -50,18 +50,16 @@
               class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-gray-600"
             >
               <div>
-                by <span class="font-medium">{{ newsItem.reporter }}</span>
+                by
+                <span class="font-medium inline-flex items-center gap-2">
+                  {{ newsItem.reporter }}
+                  <VerifiedBadge :verified="newsItem.reporterVerified" size="sm" />
+                </span>
                 <span class="mx-1">·</span>
                 <time :datetime="newsItem.reportedAt">
                   {{ formatDate(newsItem.reportedAt) }}
                 </time>
               </div>
-              <button
-                @click="openModal"
-                class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-              >
-                Vote & Comment
-              </button>
             </div>
 
             <img
@@ -70,10 +68,6 @@
               :alt="newsItem.title"
               class="w-full max-h-[440px] object-cover rounded-xl"
             />
-
-            <p v-if="newsItem.summary" class="text-gray-700 leading-relaxed">
-              {{ newsItem.summary }}
-            </p>
 
             <p class="text-gray-800 leading-relaxed whitespace-pre-line">
               {{ newsItem.content }}
@@ -143,13 +137,7 @@
                   <span class="text-lg font-semibold text-gray-900">
                     {{ comment.username }}
                   </span>
-                  <span
-                    v-if="comment.userVerified"
-                    class="flex items-center justify-center h-5 w-5 rounded-full bg-green-500 text-white text-xs"
-                    title="Verified user"
-                  >
-                    ✓
-                  </span>
+                  <VerifiedBadge :verified="comment.userVerified" size="sm" />
                 </div>
                 <div
                   :class="voteBadgeClass(comment.voteType)"
@@ -208,11 +196,12 @@
           the overall tally.
         </p>
 
-        <form @submit.prevent="submitComment" class="space-y-4">
+        <form @submit.prevent="onSubmitComment" class="space-y-4">
           <div class="text-sm text-gray-600">
             Posting as
-            <span class="font-semibold text-gray-800">
+            <span class="font-semibold text-gray-800 inline-flex items-center gap-2">
               {{ currentUser?.username ?? "your account" }}
+              <VerifiedBadge :verified="currentUser?.verified" size="sm" />
             </span>
           </div>
 
@@ -221,12 +210,12 @@
               >Comment</label
             >
             <textarea
-              v-model="newComment.text"
+              v-model="commentText"
               rows="4"
               placeholder="Write your comment..."
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-              required
             ></textarea>
+            <p v-if="errorsComment.text" class="mt-1 text-sm text-red-600">{{ errorsComment.text }}</p>
           </div>
 
           <div class="space-y-3">
@@ -234,9 +223,10 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Upload image</label>
               <div class="flex items-center gap-4">
-                <input type="file" accept="image/*" @change="(e:any)=>{ const f=(e.target?.files?.[0]||null); commentImageFile = f; commentImagePreview = f ? objectUrl(f) : null; }" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <input type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleCommentImageChange" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
               </div>
+              <p v-if="errorsComment.commentImage" class="mt-1 text-sm text-red-600">{{ errorsComment.commentImage }}</p>
             </div>
           </div>
 
@@ -276,9 +266,8 @@
             </div>
           </div>
 
-          <p v-if="modalError" class="text-sm text-red-600">
-            {{ modalError }}
-          </p>
+          <p v-if="errorsComment.vote" class="text-sm text-red-600">{{ errorsComment.vote }}</p>
+          <p v-if="modalError" class="text-sm text-red-600">{{ modalError }}</p>
 
           <div class="flex justify-end gap-3 pt-2">
             <button
@@ -308,6 +297,9 @@ import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 import apiClient from "@/services/apiClient";
+import * as yup from "yup";
+import { useForm as useFormComment, useField as useFieldComment } from 'vee-validate';
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 type VoteChoice = "FAKE" | "FACT";
 
@@ -337,11 +329,54 @@ const newComment = reactive({
   imageUrl: "",
 });
 
+// Comment form validation
+const validationSchemaComment = yup.object({
+  text: yup
+    .string()
+    .required('Please enter your comment.')
+    .test('maxWords', 'Comment must not exceed 200 words', (value) => {
+      if (!value) return true;
+      const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+      return words.length <= 200;
+    }),
+  vote: yup.mixed<'FAKE' | 'FACT'>().oneOf(['FAKE', 'FACT'], 'Please choose Fact or Fake.').required('Please choose Fact or Fake.'),
+  commentImage: yup
+    .mixed<File>()
+    .required('Please upload an image.')
+    .test('fileType', 'Image must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
+    }),
+});
+
+const { errors: errorsComment, handleSubmit: handleSubmitComment, setFieldValue: setFieldValueComment } = useFormComment({
+  validationSchema: validationSchemaComment,
+  initialValues: { text: '', vote: undefined as unknown as 'FAKE' | 'FACT', commentImage: null as File | null }
+});
+
+const { value: commentText } = useFieldComment<string>('text');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { value: voteField } = useFieldComment<'FAKE' | 'FACT'>('vote');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { value: commentImage, setValue: setCommentImage } = useFieldComment<File | null>('commentImage');
+
 const commentImageFile = ref<File | null>(null);
 const commentImagePreview = ref<string | null>(null);
 
 function objectUrl(file: File): string {
   return URL.createObjectURL(file);
+}
+
+function handleCommentImageChange(e: Event) {
+  const target = e.target as HTMLInputElement;
+  const file = target.files?.[0] || null;
+  setCommentImage(file);
+  commentImageFile.value = file;
+  commentImagePreview.value = file ? objectUrl(file) : null;
 }
 
 
@@ -561,21 +596,11 @@ const closeModal = () => {
 
 const selectVote = (choice: VoteChoice) => {
   selectedVote.value = choice;
+  setFieldValueComment('vote', choice);
 };
 
-async function submitComment() {
+const onSubmitComment = handleSubmitComment(async (values) => {
   modalError.value = "";
-
-  if (!newComment.text.trim()) {
-    modalError.value = "Please enter your comment.";
-    return;
-  }
-
-  const effectiveVote = selectedVote.value;
-  if (!effectiveVote) {
-    modalError.value = "Please choose Fact or Fake.";
-    return;
-  }
 
   if (hasVoted.value) {
     modalError.value = "You have already shared your thoughts on this article.";
@@ -585,25 +610,25 @@ async function submitComment() {
   isSubmitting.value = true;
   try {
     let finalImageUrl: string | undefined = undefined;
-    if (commentImageFile.value) {
+    if (values.commentImage) {
       const formData = new FormData();
-      formData.append("file", commentImageFile.value);
+      formData.append("file", values.commentImage);
       formData.append("folder", "comment-images");
-      const { data } = await apiClient.post<{ url: string }>(
+      const { data } = await apiClient.post<{ name: string }>(
         "/api/upload/image",
         formData
       );
-      finalImageUrl = data.url;
+      finalImageUrl = data.name;
     }
     await newsStore.addComment(numericNewsId.value, {
-      text: newComment.text,
+      text: values.text,
       imageUrl: finalImageUrl || newComment.imageUrl || undefined,
-      voteType: effectiveVote,
+      voteType: values.vote,
     });
 
     await newsStore.refreshUserVoteStatus(numericNewsId.value);
     hasVoted.value = true;
-    selectedVote.value = effectiveVote;
+    selectedVote.value = values.vote;
     await fetchVoteCounts();
     comments.value = await newsStore.getComments(numericNewsId.value);
     syncSelectedVote();
@@ -611,6 +636,7 @@ async function submitComment() {
     newComment.imageUrl = "";
     commentImageFile.value = null;
     commentImagePreview.value = null;
+    setCommentImage(null);
     modalError.value = "";
     closeModal();
   } catch (error) {
@@ -619,7 +645,7 @@ async function submitComment() {
   } finally {
     isSubmitting.value = false;
   }
-}
+});
 
 function formatDate(iso: string) {
   if (!iso) return "";

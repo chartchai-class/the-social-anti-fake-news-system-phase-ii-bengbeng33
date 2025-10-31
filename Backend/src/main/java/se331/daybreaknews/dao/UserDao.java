@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserDao {
-    // try to get a user optional if it's match
+    // try to get a user, using optional if it's matching or not
     Optional<User> getUser(Long id);
     Optional<User> findByEmail(String email);
     Optional<User> findByUsername(String username);

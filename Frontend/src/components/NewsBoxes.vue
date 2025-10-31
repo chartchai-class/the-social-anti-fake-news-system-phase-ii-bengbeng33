@@ -20,11 +20,12 @@
               {{ n.title }}
             </h3>
             <div class="w-full flex justify-end mt-1">
-              <span
-                class="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[16px] text-gray truncate text-right"
+              <div
+                class="flex items-center gap-2 text-[14px] sm:text-[14px] md:text-[15px] lg:text-[16px] text-gray text-right"
               >
-                {{ "by " + n.reporter }}
-              </span>
+                <span class="truncate">by {{ n.reporter }}</span>
+                <VerifiedBadge :verified="n.reporterVerified" size="xs" />
+              </div>
             </div>
           </div>
         </div>
@@ -64,7 +65,7 @@
 
 <script setup lang="ts">
 import { useRouter } from "vue-router";
-import type { NewsItem, Status } from "@/types";
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 type Status = "FAKE" | "FACT" | "UNVERIFIED" | null;
 
@@ -76,6 +77,7 @@ interface NewsItem {
   status?: Status;
   currentStatus?: Status;
   reporter: string;
+  reporterVerified?: boolean;
   reportedAt: string;
   imageUrl?: string;
   fakeVotes?: number;

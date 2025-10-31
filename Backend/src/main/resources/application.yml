@@ -22,13 +22,13 @@ spring:
       max-file-size: 10MB
 
 supabase:
-  url: https://gdvmhaboyscqbpiwggrn.supabase.co
-  anon-key: ${SUPABASE_ANON_KEY}
-  service-key: ${SUPABASE_SERVICE_KEY}
-  bucket-name: ${SUPABASE_BUCKET_NAME:news-images}
   storage:
-    bucket: ${SUPABASE_BUCKET_NAME:news-images}
-    endpoint_output: https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public
+    endpoint: ${SUPABASE_STORAGE_ENDPOINT:https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/s3}
+    endpoint_output: ${SUPABASE_STORAGE_ENDPOINT_OUTPUT:https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public}
+    bucket: ${SUPABASE_BUCKET_NAME:images}
+    region: ${SUPABASE_STORAGE_REGION:ap-southeast-1}
+    accessKey: ${SUPABASE_ACCESS_KEY:}
+    secretKey: ${SUPABASE_SECRET_KEY:}
 
 application:
   security:

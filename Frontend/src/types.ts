@@ -10,6 +10,7 @@ export interface NewsItem {
   status?: Status;
   currentStatus?: Status;
   reporter: string;
+  reporterVerified?: boolean;
   reportedAt: string;
   imageUrl?: string;
   fakeVotes?: number;
@@ -50,5 +51,18 @@ export interface User {
   profileImagePath?: string;
   createdAt: string;
   roles?: UserRole[];
+  verified?: boolean;
+}
+
+export interface UserProfile {
+  id: number;
+  name: string;
+  surname: string;
+  username: string;
+  email: string;
+  profileImagePath?: string;
+  roles?: UserRole[];
+  newsReportedCount?: number;
+  commentedCount?: number;
   verified?: boolean;
 }

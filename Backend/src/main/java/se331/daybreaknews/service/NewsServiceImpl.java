@@ -1,21 +1,24 @@
 package se331.daybreaknews.service;
 
 import se331.daybreaknews.dao.NewsDao;
+import se331.daybreaknews.dao.UserDao;
 import se331.daybreaknews.dao.VoteDao;
 import se331.daybreaknews.dto.NewsDTO;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
+import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.VoteType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -23,36 +26,47 @@ import java.util.stream.Collectors;
 public class NewsServiceImpl implements NewsService {
     final NewsDao newsDao;
     final VoteDao voteDao;
+    final UserDao userDao;
 
     @Override
     @Transactional(readOnly = true)
     public List<NewsDTO> getAllNews() {
         boolean includeHidden = currentUserIsAdmin();
-        return newsDao.findAllByOrderByReportedAtDesc()
-                .stream()
-                .filter(news -> includeHidden || news.isVisible())
-                .map(this::enrichWithVotes)
-                .collect(Collectors.toList());
+        List<News> allNews = newsDao.findAllByOrderByReportedAtDesc();
+        List<NewsDTO> output = new ArrayList<>();
+        for (News news : allNews) {
+            boolean canSee = includeHidden || news.isVisible();
+            if (canSee) {
+                output.add(enrichWithVotes(news));
+            }
+        }
+        return output;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<NewsDTO> getAllNewsIncludingHidden() {
-        return newsDao.findAllByOrderByReportedAtDesc()
-                .stream()
-                .map(this::enrichWithVotes)
-                .collect(Collectors.toList());
+        List<News> allNews = newsDao.findAllByOrderByReportedAtDesc();
+        List<NewsDTO> output = new ArrayList<>();
+        for (News news : allNews) {
+            output.add(enrichWithVotes(news));
+        }
+        return output;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<NewsDTO> getNewsByStatus(NewsStatus status) {
         boolean includeHidden = currentUserIsAdmin();
-        return newsDao.findByStatus(status)
-                .stream()
-                .filter(news -> includeHidden || news.isVisible())
-                .map(this::enrichWithVotes)
-                .collect(Collectors.toList());
+        List<News> newsByStatus = newsDao.findByStatus(status);
+        List<NewsDTO> output = new ArrayList<>();
+        for (News news : newsByStatus) {
+            boolean canSee = includeHidden || news.isVisible();
+            if (canSee) {
+                output.add(enrichWithVotes(news));
+            }
+        }
+        return output;
     }
 
     @Override
@@ -63,32 +77,43 @@ public class NewsServiceImpl implements NewsService {
             return getAllNews();
         }
 
-        // Search title/content first
-        List<News> results = newsDao
-                .findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(q, q);
+        List<News> matchedNews = new ArrayList<>(
+                newsDao.findByTitleContainingIgnoreCaseOrContentContainingIgnoreCase(q, q)
+        );
 
-        // If query equals a status word, include status results as well
-        NewsStatus status = null;
-        for (NewsStatus s : NewsStatus.values()) {
-            if (s.name().equalsIgnoreCase(q)) {
-                status = s;
+        // Allow searching by status keyword as well.
+        NewsStatus matchedStatus = null;
+        for (NewsStatus statusCandidate : NewsStatus.values()) {
+            if (statusCandidate.name().equalsIgnoreCase(q)) {
+                matchedStatus = statusCandidate;
                 break;
             }
         }
-        if (status != null) {
-            List<News> byStatus = newsDao.findByStatus(status);
-            for (News n : byStatus) {
-                if (results.stream().noneMatch(x -> x.getId().equals(n.getId()))) {
-                    results.add(n);
+        if (matchedStatus != null) {
+            List<News> byStatus = newsDao.findByStatus(matchedStatus);
+            for (News candidate : byStatus) {
+                boolean alreadyAdded = false;
+                for (News existing : matchedNews) {
+                    if (existing.getId().equals(candidate.getId())) {
+                        alreadyAdded = true;
+                        break;
+                    }
+                }
+                if (!alreadyAdded) {
+                    matchedNews.add(candidate);
                 }
             }
         }
 
         boolean includeHidden = currentUserIsAdmin();
-        return results.stream()
-                .filter(news -> includeHidden || news.isVisible())
-                .map(this::enrichWithVotes)
-                .collect(Collectors.toList());
+        List<NewsDTO> output = new ArrayList<>();
+        for (News news : matchedNews) {
+            boolean canSee = includeHidden || news.isVisible();
+            if (canSee) {
+                output.add(enrichWithVotes(news));
+            }
+        }
+        return output;
     }
 
     @Override
@@ -175,7 +200,15 @@ public class NewsServiceImpl implements NewsService {
         long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FACT);
 
         dto.setStatus(resolveStatus(news, fakeVotes, notFakeVotes));
-        dto.setReporter(news.getReporter());
+        String reporter = news.getReporter();
+        dto.setReporter(reporter);
+        boolean reporterVerified = false;
+        if (reporter != null && !reporter.isBlank()) {
+            reporterVerified = userDao.findByUsername(reporter)
+                    .map(User::isVerified)
+                    .orElse(false);
+        }
+        dto.setReporterVerified(reporterVerified);
         dto.setReportedAt(news.getReportedAt());
         dto.setImageUrl(news.getImageUrl());
         dto.setFakeVotes(fakeVotes);
@@ -206,7 +239,11 @@ public class NewsServiceImpl implements NewsService {
         if (authentication instanceof AnonymousAuthenticationToken) {
             return false;
         }
-        return authentication.getAuthorities().stream()
-                .anyMatch(auth -> "ROLE_ADMIN".equals(auth.getAuthority()));
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            if ("ROLE_ADMIN".equals(authority.getAuthority())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

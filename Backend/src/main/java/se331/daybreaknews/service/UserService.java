@@ -2,6 +2,7 @@ package se331.daybreaknews.service;
 
 import se331.daybreaknews.dto.UserRegisterRequestDTO;
 import se331.daybreaknews.dto.UserDTO;
+import se331.daybreaknews.dto.UserProfileDTO;
 import se331.daybreaknews.entity.User;
 
 import java.util.List;
@@ -15,4 +16,5 @@ public interface UserService {
     List<UserDTO> getAllUsers();
     UserDTO updateMemberRole(Long userId, boolean makeMember);
     UserDTO updateVerifiedStatus(Long userId, boolean verified);
+    UserProfileDTO getUserProfile(Long userId);
 }
