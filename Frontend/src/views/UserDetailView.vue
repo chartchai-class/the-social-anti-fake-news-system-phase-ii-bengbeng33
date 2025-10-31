@@ -47,12 +47,15 @@
               <!-- Username -->
               <div>
                 <label class="block text-white/80 text-sm font-medium mb-2">Username</label>
-                <input
-                  type="text"
-                  :value="profileName"
-                  readonly
-                  class="w-full px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
-                />
+                <div class="flex items-center gap-2">
+                  <input
+                    type="text"
+                    :value="profileName"
+                    readonly
+                    class="flex-1 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  />
+                  <VerifiedBadge :verified="profile?.verified" size="md" />
+                </div>
               </div>
 
               <!-- Email -->
@@ -94,6 +97,7 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import UserService from "@/services/UserService";
 import type { UserProfile } from "@/types";
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 const router = useRouter();
 const profile = ref<UserProfile | null>(null);
@@ -137,4 +141,3 @@ onMounted(() => {
 <style scoped>
 /* Additional styles if needed */
 </style>
-

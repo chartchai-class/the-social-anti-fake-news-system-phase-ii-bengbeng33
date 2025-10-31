@@ -1,10 +1,12 @@
 package se331.daybreaknews.service;
 
 import se331.daybreaknews.dao.NewsDao;
+import se331.daybreaknews.dao.UserDao;
 import se331.daybreaknews.dao.VoteDao;
 import se331.daybreaknews.dto.NewsDTO;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
+import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.VoteType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 public class NewsServiceImpl implements NewsService {
     final NewsDao newsDao;
     final VoteDao voteDao;
+    final UserDao userDao;
 
     @Override
     @Transactional(readOnly = true)
@@ -175,7 +178,15 @@ public class NewsServiceImpl implements NewsService {
         long notFakeVotes = voteDao.countByNewsIdAndVoteType(news.getId(), VoteType.FACT);
 
         dto.setStatus(resolveStatus(news, fakeVotes, notFakeVotes));
-        dto.setReporter(news.getReporter());
+        String reporter = news.getReporter();
+        dto.setReporter(reporter);
+        boolean reporterVerified = false;
+        if (reporter != null && !reporter.isBlank()) {
+            reporterVerified = userDao.findByUsername(reporter)
+                    .map(User::isVerified)
+                    .orElse(false);
+        }
+        dto.setReporterVerified(reporterVerified);
         dto.setReportedAt(news.getReportedAt());
         dto.setImageUrl(news.getImageUrl());
         dto.setFakeVotes(fakeVotes);
