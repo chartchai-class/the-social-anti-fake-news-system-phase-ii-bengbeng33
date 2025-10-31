@@ -2,11 +2,11 @@
 
 # Group Name: bengbeng33 
 ## Members: 
-662115005 Julaluk
+662115005 Julalak Khamluerit
 662115040 Ratchanon Danintha
-662115047 Watcharapong 
+662115047 Watcharapong Wanna
 
-# Frontend deployed URL :
+# Frontend deployed URL : https://the-social-anti-fake-news-system-ph-pi.vercel.app/
 
 # The Social Anti-Fake News System Phase II
 The Social Anti-Fake News system is a system that requires the wisdom of the cloud to help check fake 
