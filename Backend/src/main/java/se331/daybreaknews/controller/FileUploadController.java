@@ -50,30 +50,5 @@ public class FileUploadController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-    @PostMapping("/file")
-    public ResponseEntity<Map<String, String>> uploadFile(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "folder", defaultValue = "files") String folder) {
-        try {
-            if (file.isEmpty()) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "File is empty");
-                return ResponseEntity.badRequest().body(error);
-            }
-
-            String fileUrl = supabaseStorageService.uploadFile(file, folder);
-            
-            Map<String, String> response = new HashMap<>();
-            response.put("url", fileUrl);
-            response.put("message", "File uploaded successfully");
-            
-            return ResponseEntity.ok(response);
-        } catch (IOException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", "Failed to upload file: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
-        }
-    }
 }
 
