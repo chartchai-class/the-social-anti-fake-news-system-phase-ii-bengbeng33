@@ -68,7 +68,7 @@
                 <div class="relative">
                   <label for="profile-upload"
                     class="cursor-pointer flex flex-col items-center justify-center w-40 h-40 bg-gray-100 rounded-full border-2 border-gray-700 hover:bg-gray-200 transition-colors shadow-lg">
-                    <input id="profile-upload" type="file" accept="image/*" @change="handleProfileFileChange"
+                    <input id="profile-upload" type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleProfileFileChange"
                       class="hidden" />
                     <div class="relative flex flex-col items-center justify-center w-full h-full">
                       <svg v-if="!profilePreview" class="w-12 h-12 text-gray-700" fill="currentColor"
@@ -172,9 +172,13 @@ const validationSchema = yup.object({
   profileFile: yup
     .mixed<File>()
     .required('Profile picture is required')
-    .test('fileType', 'Profile picture must be an image', (value) => {
-      if (!value) return false;
-      return value instanceof File && value.type.startsWith('image/');
+    .test('fileType', 'Profile picture must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
     })
     .test('fileSize', 'Profile picture must be less than 5MB', (value) => {
       if (!value) return false;

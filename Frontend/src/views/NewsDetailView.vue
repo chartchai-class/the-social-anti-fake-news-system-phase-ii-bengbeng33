@@ -234,7 +234,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Upload image</label>
               <div class="flex items-center gap-4">
-                <input type="file" accept="image/*" @change="handleCommentImageChange" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
+                <input type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleCommentImageChange" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="commentImagePreview" :src="commentImagePreview" alt="preview" class="w-14 h-14 object-cover rounded" />
               </div>
               <p v-if="errorsComment.commentImage" class="mt-1 text-sm text-red-600">{{ errorsComment.commentImage }}</p>
@@ -353,9 +353,13 @@ const validationSchemaComment = yup.object({
   commentImage: yup
     .mixed<File>()
     .required('Please upload an image.')
-    .test('fileType', 'Image must be an image file', (value) => {
-      if (!value) return false;
-      return value instanceof File && value.type.startsWith('image/');
+    .test('fileType', 'Image must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
     }),
 });
 
@@ -365,7 +369,9 @@ const { errors: errorsComment, handleSubmit: handleSubmitComment, setFieldValue:
 });
 
 const { value: commentText } = useFieldComment<string>('text');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { value: voteField } = useFieldComment<'FAKE' | 'FACT'>('vote');
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { value: commentImage, setValue: setCommentImage } = useFieldComment<File | null>('commentImage');
 
 const commentImageFile = ref<File | null>(null);

@@ -36,7 +36,7 @@ public class SupabaseStorageService {
         // 1. Check for valid file name/existence
         if (fileName != null && !fileName.isEmpty() && fileName.contains(".")) {
             final String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
-            String[] allowedExt = {"jpg", "jpeg", "png", "gif"};
+            String[] allowedExt = {"jpg", "jpeg", "png"};
 
             // 2. Check for allowed extensions
             for (String s : allowedExt) {
@@ -51,7 +51,7 @@ public class SupabaseStorageService {
             }
 
             // 3. If the loop finishes without a return, the file type is invalid
-            throw new ServletException("File must be an image (jpg, jpeg, png, gif).");
+            throw new ServletException("File must be an image (jpg, jpeg, or png).");
         }
 
         // 4. If the file name is null or empty, or no file was provided in the request

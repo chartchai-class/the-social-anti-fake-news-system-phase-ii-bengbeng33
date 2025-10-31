@@ -99,7 +99,7 @@
                 >Upload image *</label
               >
               <div class="flex items-center gap-4">
-                <input id="news-image-upload" type="file" accept="image/*" @change="handleNewsImageChange"
+                <input id="news-image-upload" type="file" accept="image/jpeg,image/jpg,image/png,.jpeg,.jpg,.png" @change="handleNewsImageChange"
                        class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" />
                 <img v-if="newsImagePreview" :src="newsImagePreview" alt="preview" class="w-16 h-16 object-cover rounded" />
               </div>
@@ -199,9 +199,13 @@ const validationSchemaAdd = yup.object({
   newsImage: yup
     .mixed<File>()
     .required('Please upload an image.')
-    .test('fileType', 'Image must be an image file', (value) => {
-      if (!value) return false;
-      return value instanceof File && value.type.startsWith('image/');
+    .test('fileType', 'Image must be JPEG, JPG, or PNG', (value) => {
+      if (!value || !(value instanceof File)) return false;
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      const validExtensions = ['.jpeg', '.jpg', '.png'];
+      const fileName = value.name.toLowerCase();
+      return validTypes.includes(value.type.toLowerCase()) || 
+             validExtensions.some(ext => fileName.endsWith(ext));
     }),
 });
 

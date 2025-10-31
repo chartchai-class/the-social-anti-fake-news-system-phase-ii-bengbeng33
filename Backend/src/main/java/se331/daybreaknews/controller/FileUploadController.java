@@ -31,9 +31,26 @@ public class FileUploadController {
             }
 
             String contentType = file.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
+            String fileName = file.getOriginalFilename();
+            
+            // Validate file type - only JPEG, JPG, or PNG
+            boolean isValidImage = false;
+            if (contentType != null) {
+                String lowerContentType = contentType.toLowerCase();
+                isValidImage = lowerContentType.equals("image/jpeg") || 
+                              lowerContentType.equals("image/jpg") || 
+                              lowerContentType.equals("image/png");
+            }
+            
+            // Also check file extension as backup validation
+            if (!isValidImage && fileName != null && fileName.contains(".")) {
+                String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+                isValidImage = extension.equals("jpeg") || extension.equals("jpg") || extension.equals("png");
+            }
+            
+            if (!isValidImage) {
                 Map<String, String> error = new HashMap<>();
-                error.put("error", "File must be an image");
+                error.put("error", "File must be an image (JPEG, JPG, or PNG only)");
                 return ResponseEntity.badRequest().body(error);
             }
 
