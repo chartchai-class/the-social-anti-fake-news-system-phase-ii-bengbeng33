@@ -7,8 +7,11 @@ import org.springframework.util.StringUtils;
 import se331.daybreaknews.dao.UserDao;
 import se331.daybreaknews.dto.UserRegisterRequestDTO;
 import se331.daybreaknews.dto.UserDTO;
+import se331.daybreaknews.dto.UserProfileDTO;
 import se331.daybreaknews.entity.User;
 import se331.daybreaknews.entity.UserRole;
+import se331.daybreaknews.repository.NewsRepository;
+import se331.daybreaknews.repository.CommentRepository;
 
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +25,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
     private final PasswordEncoder passwordEncoder;
+    private final NewsRepository newsRepository;
+    private final CommentRepository commentRepository;
 
     @Override
     @Transactional
@@ -148,5 +153,29 @@ public class UserServiceImpl implements UserService {
 
     private String normalizeEmail(String email) {
         return email == null ? null : email.trim().toLowerCase();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserProfileDTO getUserProfile(Long userId) {
+        User user = userDao.getUser(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + userId));
+
+        // Get username for counting news (reporter field uses username)
+        String username = user.getUsername();
+        long newsCount = newsRepository.countByReporter(username);
+        long commentCount = commentRepository.countByUserId(userId);
+
+        return UserProfileDTO.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .surname(user.getSurname())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .profileImagePath(user.getProfileImagePath())
+                .roles(user.getRoles())
+                .newsReportedCount(newsCount)
+                .commentedCount(commentCount)
+                .build();
     }
 }
