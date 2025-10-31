@@ -9,17 +9,17 @@
       </div>
   
     <!-- Login Form Container -->
-    <div class="relative z-10 flex items-center justify-center min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div class="w-full max-w-4xl mx-auto">
+    <div class="relative z-10 flex justify-center min-h-screen pt-2 pb-4 px-4 sm:pt-4 sm:pb-12 sm:px-6 lg:px-8">
+      <div class="w-full max-w-4xl mx-auto mt-32 sm:mt-6 md:mt-8">
         <!-- Frosted Glass Form (Glassmorphism) -->
-        <div class="bg-gray-100/20 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-300/50 p-8 sm:p-12">
-          <h1 class="text-4xl sm:text-5xl font-bold text-black mb-8 
+        <div class="bg-gray-100/20 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-300/50 p-4 sm:p-8 md:p-12">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-black mb-4 sm:mb-8 
            drop-shadow-[2px_2px_3px_rgba(255,255,255,0.8)] text-center">
             Login
           </h1>
 
           
-          <form class="space-y-6" @submit.prevent="onSubmit">
+          <form class="space-y-4 sm:space-y-6" @submit.prevent="onSubmit">
             <!-- Email -->
             <div class="flex flex-col items-center gap-2">
               <input
@@ -27,9 +27,9 @@
                 type="email"
                 placeholder="Email Address"
                 @blur="handleEmailBlur"
-                class="w-[500px] h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                class="w-full max-w-[500px] h-[50px] sm:h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm sm:text-base"
               />
-              <p v-if="errors.email" class="text-sm text-red-600">{{ errors.email }}</p>
+              <p v-if="errors.email" class="text-xs sm:text-sm text-red-600">{{ errors.email }}</p>
             </div>
 
             <!-- Password -->
@@ -38,17 +38,17 @@
                 v-model="password"
                 type="password"
                 placeholder="Password"
-                class="w-[500px] h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                class="w-full max-w-[500px] h-[50px] sm:h-[60px] px-4 py-3 bg-gray-100 rounded-full border border-gray-300 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all text-sm sm:text-base"
               />
-              <p v-if="errors.password" class="text-sm text-red-600">{{ errors.password }}</p>
+              <p v-if="errors.password" class="text-xs sm:text-sm text-red-600">{{ errors.password }}</p>
             </div>
   
             <!-- Sign In Button -->
-            <div class="flex justify-center">
+            <div class="flex justify-center pt-2">
               <button
                 type="submit"
                 :disabled="isSubmitting"
-                class="w-[250px] h-[60px] px-8 py-3 text-2xl bg-gray-300 text-gray-900 rounded-full font-bold shadow-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full max-w-[280px] sm:max-w-[300px] h-[50px] sm:h-[60px] px-8 py-3 text-xl sm:text-2xl bg-gray-300 text-gray-900 rounded-full font-bold shadow-lg hover:bg-gray-400 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="!isSubmitting">Log In</span>
                 <span v-else>Logging In...</span>
@@ -61,7 +61,7 @@
             </div>
 
             <!-- Register Link (Full Width) -->
-            <div class="text-gray-400 text-center">
+            <div class="text-gray-400 text-center text-sm sm:text-base pt-2">
               Do not have an account?
               <router-link
                 to="/register"
@@ -128,11 +128,3 @@ const onSubmit = handleSubmit(async (values) => {
   }
 });
 </script>
-
-<style scoped>
-/* Additional styles if needed */
-.text-shadow-lg {
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-}
-</style>
-  

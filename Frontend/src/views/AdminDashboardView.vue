@@ -5,20 +5,20 @@
     <div class="pointer-events-none absolute -right-32 top-1/3 h-80 w-80 rounded-full bg-purple-500/20 blur-3xl"></div>
     <div class="pointer-events-none absolute -bottom-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-pink-500/20 blur-3xl"></div>
 
-    <div class="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 sm:px-8 lg:px-10">
-      <header class="flex flex-col items-center gap-6 text-center">
-        <div class="rounded-full border border-white/40 bg-white/10 px-6 py-2 text-sm font-semibold uppercase tracking-[0.3em] text-orange-200 shadow-lg shadow-orange-500/10">
+    <div class="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-6 px-3 py-8 sm:gap-8 sm:px-8 sm:py-12 lg:px-10">
+      <header class="flex flex-col items-center gap-3 text-center sm:gap-6">
+        <div class="rounded-full border border-white/40 bg-white/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-orange-200 shadow-lg shadow-orange-500/10 sm:px-6 sm:py-2 sm:text-sm sm:tracking-[0.3em]">
           Management Area
         </div>
-        <h1 class="text-4xl font-bold tracking-wide text-white drop-shadow-[0_6px_18px_rgba(255,255,255,0.25)] sm:text-5xl">
+        <h1 class="text-2xl font-bold tracking-wide text-white drop-shadow-[0_6px_18px_rgba(255,255,255,0.25)] sm:text-4xl lg:text-5xl">
           Admin Dashboard
         </h1>
-        <p class="max-w-2xl text-base text-gray-200 sm:text-lg">
+        <p class="max-w-2xl px-3 text-xs text-gray-200 leading-relaxed sm:px-0 sm:text-base lg:text-lg">
           Manage member privileges and control which news, comments, and voices stay visible to the community. Changes apply instantly and reflect for all readers.
         </p>
-        <div class="flex gap-4 rounded-full border border-white/10 bg-white/10 p-2 shadow-xl shadow-purple-500/10 backdrop-blur">
+        <div class="flex flex-wrap justify-center gap-2 rounded-full border border-white/10 bg-white/10 p-1.5 shadow-xl shadow-purple-500/10 backdrop-blur sm:flex-nowrap sm:gap-4 sm:p-2">
           <button
-            class="w-36 rounded-full px-6 py-2 text-sm font-semibold transition-all duration-200 sm:w-40 sm:text-base"
+            class="w-28 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 sm:w-40 sm:px-6 sm:py-2 sm:text-base"
             :class="activeTab === 'users'
               ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/50'
               : 'bg-transparent text-white/80 hover:text-white'"
@@ -27,7 +27,7 @@
             Manage Role
           </button>
           <button
-            class="w-36 rounded-full px-6 py-2 text-sm font-semibold transition-all duration-200 sm:w-40 sm:text-base"
+            class="w-28 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 sm:w-40 sm:px-6 sm:py-2 sm:text-base"
             :class="activeTab === 'news'
               ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/50'
               : 'bg-transparent text-white/80 hover:text-white'"
@@ -36,7 +36,7 @@
             Manage News
           </button>
           <button
-            class="w-40 rounded-full px-6 py-2 text-sm font-semibold transition-all duration-200 sm:w-44 sm:text-base"
+            class="w-32 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all duration-200 sm:w-44 sm:px-6 sm:py-2 sm:text-base"
             :class="activeTab === 'comments'
               ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/50'
               : 'bg-transparent text-white/80 hover:text-white'"
@@ -55,62 +55,62 @@
             </div>
           </div>
           <template v-else>
-            <p v-if="sortedUsers.length === 0" class="rounded-2xl border border-white/10 bg-white/5 px-6 py-10 text-center text-sm text-gray-200">
+            <p v-if="sortedUsers.length === 0" class="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-xs text-gray-200 sm:rounded-2xl sm:px-6 sm:py-10 sm:text-sm">
               No users found. Invite new readers to start populating the community.
             </p>
-            <ul v-else class="space-y-4">
+            <ul v-else class="space-y-3 sm:space-y-4">
               <li
                 v-for="user in sortedUsers"
                 :key="user.id"
-                class="relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 transition hover:border-orange-300/40 hover:bg-white/15 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+                class="relative flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 transition hover:border-orange-300/40 hover:bg-white/15 sm:gap-4 sm:rounded-3xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
               >
-                <div class="flex items-start gap-4 sm:items-center">
-                  <div class="grid h-14 w-14 place-items-center rounded-full bg-white/20 text-xl font-semibold text-white/80 shadow-inner shadow-black/40">
+                <div class="flex items-start gap-3 sm:gap-4 sm:items-center">
+                  <div class="grid h-12 w-12 flex-shrink-0 place-items-center rounded-full bg-white/20 text-lg font-semibold text-white/80 shadow-inner shadow-black/40 sm:h-14 sm:w-14 sm:text-xl">
                     {{ initials(user) }}
                   </div>
-                  <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                      <h2 class="text-lg font-semibold text-white sm:text-xl">
+                  <div class="space-y-1 flex-1 min-w-0">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <h2 class="text-base font-semibold text-white sm:text-lg lg:text-xl break-words">
                         {{ user.username || `${user.name} ${user.surname}` }}
                       </h2>
                       <VerifiedBadge :verified="isVerified(user)" size="sm" />
                     </div>
-                    <p class="text-sm text-gray-300 sm:text-base">
+                    <p class="text-xs text-gray-300 sm:text-sm lg:text-base break-all">
                       {{ user.email }}
                     </p>
-                    <div class="flex flex-wrap gap-2 text-xs uppercase tracking-wide text-gray-200/80">
-                      <span class="rounded-full bg-white/10 px-3 py-1">
+                    <div class="flex flex-wrap gap-1.5 sm:gap-2 text-[10px] uppercase tracking-wide text-gray-200/80 sm:text-xs">
+                      <span class="rounded-full bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1">
                         Joined {{ formatDate(user.createdAt) }}
                       </span>
                       <span
                         v-for="role in (user.roles ?? [])"
                         :key="`${user.id}-${role}`"
-                        class="rounded-full bg-orange-400/20 px-3 py-1 text-orange-100"
+                        class="rounded-full bg-orange-400/20 px-2 py-0.5 text-orange-100 sm:px-3 sm:py-1"
                       >
                         {{ role }}
                       </span>
                     </div>
                   </div>
                 </div>
-                <div class="flex flex-col items-end gap-4 sm:flex-row sm:items-center">
-                  <div class="flex flex-col items-end gap-2">
+                <div class="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-4">
+                  <div class="flex flex-row items-center gap-2 sm:flex-col sm:items-end sm:gap-2">
                     <span
-                      class="text-sm font-semibold uppercase tracking-tight"
+                      class="text-xs font-semibold uppercase tracking-tight whitespace-nowrap sm:text-sm"
                       :class="roleLabelClass(user)"
                     >
                       {{ computeRoleLabel(user) }}
                     </span>
                     <span
                       v-if="canBeVerified(user)"
-                      class="text-xs font-semibold uppercase tracking-tight"
+                      class="text-[10px] font-semibold uppercase tracking-tight whitespace-nowrap sm:text-xs"
                       :class="isVerified(user) ? 'text-green-300' : 'text-gray-400'"
                     >
                       {{ isVerified(user) ? "✓ Verified" : "Unverified" }}
                     </span>
                   </div>
-                  <div class="flex flex-col gap-2 sm:flex-row">
+                  <div class="flex flex-row gap-2">
                     <button
-                      class="relative flex h-10 w-20 items-center rounded-full border border-white/10 transition-all duration-200"
+                      class="relative flex h-9 w-[72px] items-center rounded-full border border-white/10 transition-all duration-200 sm:h-10 sm:w-20"
                       :class="{
                         'bg-yellow-300 text-black shadow-lg shadow-yellow-400/30': isMember(user),
                         'bg-white/15 text-white': !isMember(user),
@@ -120,16 +120,16 @@
                       @click="handleToggleUser(user)"
                     >
                       <span
-                        class="absolute left-1 top-1 h-8 w-8 rounded-full bg-white transition-all duration-200"
-                        :class="isMember(user) ? 'translate-x-9 bg-yellow-600/80 shadow-lg shadow-yellow-500/50' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
+                        class="absolute left-0.5 top-0.5 h-7 w-7 rounded-full bg-white transition-all duration-200 sm:left-1 sm:top-1 sm:h-8 sm:w-8"
+                        :class="isMember(user) ? 'translate-x-8 bg-yellow-600/80 shadow-lg shadow-yellow-500/50 sm:translate-x-9' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
                       ></span>
-                      <span class="w-full text-center text-xs font-bold tracking-wide">
+                      <span class="w-full text-center text-[10px] font-bold tracking-wide sm:text-xs">
                         {{ isMember(user) ? "ON" : "OFF" }}
                       </span>
                     </button>
                     <button
                       v-if="canBeVerified(user)"
-                      class="relative flex h-10 w-24 items-center rounded-full border border-white/10 transition-all duration-200"
+                      class="relative flex h-9 w-[88px] items-center rounded-full border border-white/10 transition-all duration-200 sm:h-10 sm:w-24"
                       :class="{
                         'bg-green-400/80 text-black shadow-lg shadow-green-400/40': isVerified(user),
                         'bg-white/15 text-white': !isVerified(user),
@@ -139,10 +139,10 @@
                       @click="handleToggleVerify(user)"
                     >
                       <span
-                        class="absolute left-1 top-1 h-8 w-8 rounded-full bg-white transition-all duration-200"
-                        :class="isVerified(user) ? 'translate-x-[68px] bg-green-600/80 shadow-lg shadow-green-500/50' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
+                        class="absolute left-0.5 top-0.5 h-7 w-7 rounded-full bg-white transition-all duration-200 sm:left-1 sm:top-1 sm:h-8 sm:w-8"
+                        :class="isVerified(user) ? 'translate-x-[58px] bg-green-600/80 shadow-lg shadow-green-500/50 sm:translate-x-[68px]' : 'translate-x-0 bg-white/90 shadow-lg shadow-black/20'"
                       ></span>
-                      <span class="w-full text-center text-xs font-bold tracking-wide">
+                      <span class="w-full text-center text-[10px] font-bold tracking-wide sm:text-xs">
                         {{ isVerified(user) ? "✓ VERIFIED" : "VERIFY" }}
                       </span>
                     </button>
@@ -160,46 +160,46 @@
             </div>
           </div>
           <template v-else>
-            <p v-if="sortedNews.length === 0" class="rounded-2xl border border-white/10 bg-white/5 px-6 py-10 text-center text-sm text-gray-200">
+            <p v-if="sortedNews.length === 0" class="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-xs text-gray-200 sm:rounded-2xl sm:px-6 sm:py-10 sm:text-sm">
               No news articles available right now. Encourage members to submit new stories.
             </p>
-            <ul v-else class="space-y-4">
+            <ul v-else class="space-y-3 sm:space-y-4">
               <li
                 v-for="item in sortedNews"
                 :key="item.id"
-                class="relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 transition hover:border-orange-300/40 hover:bg-white/15 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+                class="relative flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 transition hover:border-orange-300/40 hover:bg-white/15 sm:gap-4 sm:rounded-3xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
               >
-                <div class="space-y-3">
-                  <div class="flex flex-col gap-2">
-                    <h3 class="text-xl font-semibold text-white">
+                <div class="space-y-2 flex-1 min-w-0 sm:space-y-3">
+                  <div class="flex flex-col gap-1.5 sm:gap-2">
+                    <h3 class="text-lg font-semibold text-white sm:text-xl break-words">
                       {{ item.title }}
                     </h3>
-                    <p class="max-w-2xl text-sm text-gray-200 sm:text-base">
+                    <p class="max-w-2xl text-xs text-gray-200 sm:text-sm lg:text-base break-words">
                       {{ item.summary ?? truncate(item.content, 180) }}
                     </p>
                   </div>
-                  <div class="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-gray-300/90">
-                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
+                  <div class="flex flex-wrap gap-1.5 sm:gap-3 text-[10px] uppercase tracking-wide text-gray-300/90 sm:text-xs">
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1">
                       {{ item.reporter }}
                       <VerifiedBadge :verified="item.reporterVerified" size="xs" />
                     </span>
-                    <span class="rounded-full bg-white/10 px-3 py-1">
+                    <span class="rounded-full bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1">
                       {{ formatDate(item.reportedAt) }}
                     </span>
-                    <span class="rounded-full bg-orange-400/20 px-3 py-1 text-orange-100">
+                    <span class="rounded-full bg-orange-400/20 px-2 py-0.5 text-orange-100 sm:px-3 sm:py-1">
                       {{ item.status ?? "UNVERIFIED" }}
                     </span>
                   </div>
                 </div>
-                <div class="flex flex-col items-end gap-4 sm:items-end">
+                <div class="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-4">
                   <span
-                    class="rounded-full px-4 py-1 text-sm font-semibold tracking-wide"
+                    class="rounded-full px-3 py-1 text-xs font-semibold tracking-wide sm:px-4 sm:text-sm whitespace-nowrap"
                     :class="isVisible(item) ? 'bg-green-400/20 text-green-200' : 'bg-red-500/20 text-red-200'"
                   >
                     {{ isVisible(item) ? "Visible" : "Invisible" }}
                   </span>
                   <button
-                    class="relative flex h-10 w-24 items-center justify-center gap-2 rounded-full border border-white/10 text-sm font-semibold uppercase tracking-wide transition-all duration-200"
+                    class="relative flex h-9 w-20 items-center justify-center gap-1.5 rounded-full border border-white/10 text-xs font-semibold uppercase tracking-wide transition-all duration-200 sm:h-10 sm:w-24 sm:gap-2 sm:text-sm"
                     :class="{
                       'bg-green-400/80 text-black shadow-lg shadow-green-400/40': isVisible(item),
                       'bg-white/15 text-white': !isVisible(item),
@@ -208,12 +208,12 @@
                     :disabled="newsProcessingId === item.id"
                     @click="handleToggleNews(item)"
                   >
-                    <span class="relative h-5 w-8">
+                    <span class="relative h-4 w-6 sm:h-5 sm:w-8">
                       <svg
                         v-if="isVisible(item)"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        class="h-5 w-5 fill-current"
+                        class="h-4 w-4 fill-current sm:h-5 sm:w-5"
                       >
                         <path
                           d="M12 5c-6.5 0-9.27 6.27-9.38 6.52a1 1 0 0 0 0 .96C2.73 12.73 5.5 19 12 19s9.27-6.27 9.38-6.52a1 1 0 0 0 0-.96C21.27 11.27 18.5 5 12 5Zm0 12c-4.65 0-6.97-4.21-7.35-5 .38-.79 2.7-5 7.35-5s6.97 4.21 7.35 5c-.38.79-2.7 5-7.35 5Zm0-8a3 3 0 1 0 3 3 3 3 0 0 0-3-3Zm0 4a1 1 0 1 1 1-1 1 1 0 0 1-1 1Z"
@@ -223,7 +223,7 @@
                         v-else
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        class="h-5 w-5 fill-current"
+                        class="h-4 w-4 fill-current sm:h-5 sm:w-5"
                       >
                         <path
                           d="M21.78 2.22a1 1 0 0 0-1.56 0l-3.13 3.14A11.73 11.73 0 0 0 12 5C5.5 5 2.73 11.27 2.62 11.52a1 1 0 0 0 0 .96 15.73 15.73 0 0 0 4.11 5.22l-3 3a1 1 0 0 0 1.42 1.42l18-18a1 1 0 0 0 0-1.42ZM12 7a4.94 4.94 0 0 1 3.43 1.34l-1.46 1.46a2 2 0 0 0-2.77 2.77l-1.46 1.46A3 3 0 0 1 12 9Zm0 10c-4.65 0-6.97-4.21-7.35-5a13.94 13.94 0 0 1 3.61-4.16l1.55 1.55a3.94 3.94 0 0 0-1.03 2.61 4 4 0 0 0 6.52 3l1.46 1.46A8.79 8.79 0 0 1 12 17Zm9.38-4.52C21.27 12.73 18.5 19 12 19a8.75 8.75 0 0 1-1.56-.14l2.13-2.13a3.94 3.94 0 0 0 4.24-4.24l3.02-3a16.19 16.19 0 0 1 1.55 2.03 1 1 0 0 1 0 .96Z"
@@ -245,34 +245,34 @@
             </div>
           </div>
           <template v-else>
-            <p v-if="sortedComments.length === 0" class="rounded-2xl border border-white/10 bg-white/5 px-6 py-10 text-center text-sm text-gray-200">
+            <p v-if="sortedComments.length === 0" class="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-xs text-gray-200 sm:rounded-2xl sm:px-6 sm:py-10 sm:text-sm">
               No comments available yet. Encourage members to share their thoughts.
             </p>
-            <ul v-else class="space-y-4">
+            <ul v-else class="space-y-3 sm:space-y-4">
               <li
                 v-for="comment in sortedComments"
                 :key="comment.id"
-                class="relative flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/10 p-5 transition hover:border-orange-300/40 hover:bg-white/15 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+                class="relative flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/10 p-4 transition hover:border-orange-300/40 hover:bg-white/15 sm:gap-4 sm:rounded-3xl sm:flex-row sm:items-center sm:justify-between sm:p-6"
               >
-                <div class="space-y-3">
-                  <div class="flex flex-col gap-2">
-                    <h3 class="text-lg font-semibold text-white">
+                <div class="space-y-2 flex-1 min-w-0 sm:space-y-3">
+                  <div class="flex flex-col gap-1.5 sm:gap-2">
+                    <h3 class="text-base font-semibold text-white sm:text-lg break-words">
                       {{ comment.newsTitle ?? 'Untitled news' }}
                     </h3>
-                    <p class="text-sm text-gray-200/90">
+                    <p class="text-xs text-gray-200/90 sm:text-sm break-words">
                       {{ comment.text || '— No comment text provided —' }}
                     </p>
                   </div>
-                  <div class="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-gray-300/90">
-                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
+                  <div class="flex flex-wrap gap-1.5 sm:gap-3 text-[10px] uppercase tracking-wide text-gray-300/90 sm:text-xs">
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1">
                       {{ comment.username }}
                       <VerifiedBadge :verified="comment.userVerified" size="xs" />
                     </span>
-                    <span class="rounded-full bg-white/10 px-3 py-1">
+                    <span class="rounded-full bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1">
                       {{ formatDateTime(comment.createdAt) }}
                     </span>
                     <span
-                      class="rounded-full px-3 py-1"
+                      class="rounded-full px-2 py-0.5 sm:px-3 sm:py-1"
                       :class="comment.voteType === 'FAKE'
                         ? 'bg-red-500/20 text-red-200'
                         : 'bg-green-500/20 text-green-200'"
@@ -281,15 +281,15 @@
                     </span>
                   </div>
                 </div>
-                <div class="flex flex-col items-end justify-between gap-4 sm:items-end">
+                <div class="flex flex-row items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-4">
                   <span
-                    class="rounded-full px-4 py-1 text-sm font-semibold tracking-wide"
+                    class="rounded-full px-3 py-1 text-xs font-semibold tracking-wide sm:px-4 sm:text-sm whitespace-nowrap"
                     :class="isCommentVisible(comment) ? 'bg-green-400/20 text-green-200' : 'bg-red-500/20 text-red-200'"
                   >
                     {{ isCommentVisible(comment) ? "Visible" : "Hidden" }}
                   </span>
                   <button
-                    class="relative flex h-10 w-24 items-center justify-center gap-2 rounded-full border border-white/10 text-sm font-semibold uppercase tracking-wide transition-all duration-200"
+                    class="relative flex h-9 w-20 items-center justify-center gap-1.5 rounded-full border border-white/10 text-xs font-semibold uppercase tracking-wide transition-all duration-200 sm:h-10 sm:w-24 sm:gap-2 sm:text-sm"
                     :class="{
                       'bg-green-400/80 text-black shadow-lg shadow-green-400/40': isCommentVisible(comment),
                       'bg-white/15 text-white': !isCommentVisible(comment),
@@ -298,12 +298,12 @@
                     :disabled="commentProcessingId === comment.id"
                     @click="handleToggleComment(comment)"
                   >
-                    <span class="relative h-5 w-8">
+                    <span class="relative h-4 w-6 sm:h-5 sm:w-8">
                       <svg
                         v-if="isCommentVisible(comment)"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        class="h-5 w-5 fill-current"
+                        class="h-4 w-4 fill-current sm:h-5 sm:w-5"
                       >
                         <path
                           d="M5 5a1 1 0 0 0-.92.62l-3 7a1 1 0 0 0 .08.9l3 5A1 1 0 0 0 5 19h14a1 1 0 0 0 .86-.5l3-5a1 1 0 0 0 .08-.9l-3-7A1 1 0 0 0 19 5Zm1.38 2h11.24l2.14 5-2.14 3.5H6.38L4.24 12Z"
@@ -313,7 +313,7 @@
                         v-else
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
-                        class="h-5 w-5 fill-current"
+                        class="h-4 w-4 fill-current sm:h-5 sm:w-5"
                       >
                         <path
                           d="M4.21 3.21a1 1 0 0 0-1.42 1.42l1.75 1.75-2.46 5.72a1 1 0 0 0 .08.9l3 5A1 1 0 0 0 6 19h11.59l2.2 2.2a1 1 0 0 0 1.42-1.42ZM6.38 17 4.24 13 6 9l3.76 3.76L12 15l1.24 2Zm13.62-.38L11.38 8l-.58-.58L16.76 7l2.14 5Z"
@@ -331,7 +331,7 @@
 
       <div
         v-if="errorMessage"
-        class="rounded-2xl border border-red-400/50 bg-red-900/30 px-4 py-3 text-sm text-red-100 shadow-lg shadow-red-900/30"
+        class="rounded-xl border border-red-400/50 bg-red-900/30 px-3 py-2 text-xs text-red-100 shadow-lg shadow-red-900/30 sm:rounded-2xl sm:px-4 sm:py-3 sm:text-sm"
       >
         {{ errorMessage }}
       </div>
@@ -581,14 +581,3 @@ async function handleToggleComment(comment: Comment) {
   }
 }
 </script>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>

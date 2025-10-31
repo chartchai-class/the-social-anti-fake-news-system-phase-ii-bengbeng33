@@ -8,7 +8,7 @@
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             <!-- Left Section: Profile Picture and Role -->
-            <div class="flex flex-col items-center md:items-start space-y-4">
+            <div class="flex flex-col items-center space-y-4">
               <!-- Profile Picture -->
               <div class="relative">
                 <div class="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-800 border-4 border-white/30 flex items-center justify-center overflow-hidden">
@@ -34,7 +34,7 @@
               </div>
               
               <!-- My Role -->
-              <div class="text-center md:text-left">
+              <div class="text-center">
                 <p class="text-white/80 text-sm font-medium mb-2">My Role</p>
                 <div class="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-lg border border-white/30">
                   <span class="text-white font-semibold">{{ displayRole }}</span>
