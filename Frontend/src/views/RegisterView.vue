@@ -215,11 +215,11 @@ const onSubmit = handleSubmit(async (values) => {
       const formData = new FormData();
       formData.append('file', values.profileFile);
       formData.append('folder', 'profile-images');
-      const { data: uploadResp } = await apiClient.post<{ url: string }>(
+      const { data: uploadResp } = await apiClient.post<{ name: string }>(
         '/api/upload/image',
         formData
       );
-      profileImagePath = uploadResp.url;
+      profileImagePath = uploadResp.name;
     }
 
     const { data } = await AuthService.register({

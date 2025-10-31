@@ -60,12 +60,6 @@
                   {{ formatDate(newsItem.reportedAt) }}
                 </time>
               </div>
-              <button
-                @click="openModal"
-                class="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors"
-              >
-                Vote & Comment
-              </button>
             </div>
 
             <img
@@ -307,7 +301,7 @@ import { useRoute, useRouter } from "vue-router";
 import { useNewsStore } from "@/stores/news";
 import type { Comment, Status, User } from "@/types";
 import apiClient from "@/services/apiClient";
-import * as yup from 'yup';
+import * as yup from "yup";
 import { useForm as useFormComment, useField as useFieldComment } from 'vee-validate';
 import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
@@ -624,11 +618,11 @@ const onSubmitComment = handleSubmitComment(async (values) => {
       const formData = new FormData();
       formData.append("file", values.commentImage);
       formData.append("folder", "comment-images");
-      const { data } = await apiClient.post<{ url: string }>(
+      const { data } = await apiClient.post<{ name: string }>(
         "/api/upload/image",
         formData
       );
-      finalImageUrl = data.url;
+      finalImageUrl = data.name;
     }
     await newsStore.addComment(numericNewsId.value, {
       text: values.text,

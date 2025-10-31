@@ -6,7 +6,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import se331.daybreaknews.entity.Comment;
 import se331.daybreaknews.entity.News;
 import se331.daybreaknews.entity.NewsStatus;
 import se331.daybreaknews.entity.User;

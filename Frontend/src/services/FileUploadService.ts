@@ -1,8 +1,7 @@
 import apiClient from "@/services/apiClient";
 
 export interface UploadResponse {
-  url: string;
-  message: string;
+  name: string;
 }
 
 export default {
@@ -21,6 +20,7 @@ export default {
       }
     );
 
-    return response.data.url;
+    // The backend now follows the same pattern as the lab sheet and returns { name: "<url>" }.
+    return response.data.name;
   },
 };
