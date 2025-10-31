@@ -69,9 +69,12 @@
                     {{ initials(user) }}
                   </div>
                   <div class="space-y-1">
-                    <h2 class="text-lg font-semibold text-white sm:text-xl">
-                      {{ user.username || `${user.name} ${user.surname}` }}
-                    </h2>
+                    <div class="flex items-center gap-2">
+                      <h2 class="text-lg font-semibold text-white sm:text-xl">
+                        {{ user.username || `${user.name} ${user.surname}` }}
+                      </h2>
+                      <VerifiedBadge :verified="isVerified(user)" size="sm" />
+                    </div>
                     <p class="text-sm text-gray-300 sm:text-base">
                       {{ user.email }}
                     </p>
@@ -176,8 +179,9 @@
                     </p>
                   </div>
                   <div class="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-gray-300/90">
-                    <span class="rounded-full bg-white/10 px-3 py-1">
+                    <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
                       {{ item.reporter }}
+                      <VerifiedBadge :verified="item.reporterVerified" size="xs" />
                     </span>
                     <span class="rounded-full bg-white/10 px-3 py-1">
                       {{ formatDate(item.reportedAt) }}
@@ -262,13 +266,7 @@
                   <div class="flex flex-wrap gap-3 text-xs uppercase tracking-wide text-gray-300/90">
                     <span class="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1">
                       {{ comment.username }}
-                      <span
-                        v-if="comment.userVerified"
-                        class="flex items-center justify-center h-4 w-4 rounded-full bg-green-500 text-white text-[10px]"
-                        title="Verified user"
-                      >
-                        ✓
-                      </span>
+                      <VerifiedBadge :verified="comment.userVerified" size="xs" />
                     </span>
                     <span class="rounded-full bg-white/10 px-3 py-1">
                       {{ formatDateTime(comment.createdAt) }}
@@ -346,6 +344,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import type { AxiosError } from "axios";
 import { useAdminStore } from "@/stores/admin";
 import type { Comment, NewsItem, User } from "@/types";
+import VerifiedBadge from "@/components/VerifiedBadge.vue";
 
 type TabKey = "users" | "news" | "comments";
 

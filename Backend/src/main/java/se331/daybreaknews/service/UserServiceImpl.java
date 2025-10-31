@@ -176,6 +176,7 @@ public class UserServiceImpl implements UserService {
                 .roles(user.getRoles())
                 .newsReportedCount(newsCount)
                 .commentedCount(commentCount)
+                .verified(user.isVerified())
                 .build();
     }
 }

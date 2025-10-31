@@ -55,7 +55,10 @@
                     class="px-4 py-2 text-xs uppercase tracking-wide text-gray-500 hover:bg-gray-50 transition-colors"
                   >
                     Signed in as
-                    <span class="text-gray-700 font-semibold">{{ currentUser?.username }}</span>
+                    <span class="text-gray-700 font-semibold inline-flex items-center gap-2">
+                      {{ currentUser?.username }}
+                      <VerifiedBadge :verified="currentUser?.verified" size="xs" />
+                    </span>
                   </router-link>
                   <router-link
                     to="/"
@@ -237,7 +240,10 @@
                 to="/profile"
                 class="text-white font-semibold max-w-[160px] truncate hover:text-orange-200 transition-colors duration-200 cursor-pointer"
               >
-                @ {{ currentUser?.username }}
+                <span class="inline-flex items-center gap-2">
+                  @ {{ currentUser?.username }}
+                  <VerifiedBadge :verified="currentUser?.verified" size="xs" />
+                </span>
               </router-link>
               <button
                 @click="handleLogout"
@@ -295,6 +301,7 @@
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { User } from '@/types'
+import VerifiedBadge from '@/components/VerifiedBadge.vue'
 
 interface Props {
   itemsPerPage: number
