@@ -1,5 +1,5 @@
 <template>
-  <nav class="relative z-50 bg-orange-500 shadow-lg border-b border-orange-600">
+  <nav class="sticky top-0 z-50 bg-orange-500 shadow-lg border-b border-orange-600">
     <div class="w-full px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center h-20">
         <!-- Left side: Logo and Web Text -->
@@ -47,18 +47,39 @@
             <transition name="slide">
               <div
                 v-if="dropdownOpen"
-                class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 flex flex-col xl:hidden border border-gray-200"
+                class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl z-50 flex flex-col xl:hidden border border-gray-200 overflow-hidden"
               >
                 <template v-if="isLoggedIn">
                   <router-link
                     to="/profile"
-                    class="px-4 py-2 text-xs uppercase tracking-wide text-gray-500 hover:bg-gray-50 transition-colors"
+                    class="block w-full px-4 py-3 bg-orange-100 hover:bg-orange-200 transition-colors rounded-t-lg"
+                    style="margin-left: -1px; margin-right: -1px; margin-top: -1px; width: calc(100% + 2px);"
                   >
-                    Signed in as
-                    <span class="text-gray-700 font-semibold inline-flex items-center gap-2">
-                      {{ currentUser?.username }}
-                      <VerifiedBadge :verified="currentUser?.verified" size="xs" />
-                    </span>
+                    <div class="flex items-center gap-3">
+                      <img 
+                        v-if="currentUser?.profileImagePath"
+                        :src="currentUser.profileImagePath"
+                        :alt="`${currentUser.username} profile`"
+                        class="w-10 h-10 rounded-full object-cover border-2 border-orange-300"
+                      />
+                      <div 
+                        v-else
+                        class="w-10 h-10 rounded-full bg-orange-200 flex items-center justify-center border-2 border-orange-300"
+                      >
+                        <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="text-xs uppercase tracking-wide text-orange-600 font-medium">
+                          Signed in as
+                        </div>
+                        <span class="text-orange-900 font-semibold inline-flex items-center gap-2 truncate text-sm">
+                          @ {{ currentUser?.username }}
+                          <VerifiedBadge :verified="currentUser?.verified" size="xs" />
+                        </span>
+                      </div>
+                    </div>
                   </router-link>
                   <router-link
                     to="/"
@@ -206,7 +227,7 @@
                   : 'text-white hover:text-orange-200 hover:bg-orange-600'
               ]"
             >
-              Admin
+              Dashboard
             </router-link>
           </div>
           <!-- Auth Links -->
@@ -238,9 +259,23 @@
             <template v-else>
               <router-link
                 to="/profile"
-                class="text-white font-semibold max-w-[160px] truncate hover:text-orange-200 transition-colors duration-200 cursor-pointer"
+                class="inline-flex items-center gap-3 px-4 py-2 rounded-md bg-orange-600 hover:bg-orange-700 text-white font-semibold max-w-[200px] truncate transition-colors duration-200 cursor-pointer"
               >
-                <span class="inline-flex items-center gap-2">
+                <img 
+                  v-if="currentUser?.profileImagePath"
+                  :src="currentUser.profileImagePath"
+                  :alt="`${currentUser.username} profile`"
+                  class="w-8 h-8 rounded-full object-cover border-2 border-white/50"
+                />
+                <div 
+                  v-else
+                  class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border-2 border-white/50"
+                >
+                  <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <span class="inline-flex items-center gap-2 truncate">
                   @ {{ currentUser?.username }}
                   <VerifiedBadge :verified="currentUser?.verified" size="xs" />
                 </span>
@@ -430,16 +465,3 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-.slide-enter-active, .slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.slide-enter-from, .slide-leave-to {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.95);
-}
-.slide-enter-to, .slide-leave-from {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-</style>

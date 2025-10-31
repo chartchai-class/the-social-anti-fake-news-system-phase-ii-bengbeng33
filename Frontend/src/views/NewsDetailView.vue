@@ -69,10 +69,6 @@
               class="w-full max-h-[440px] object-cover rounded-xl"
             />
 
-            <p v-if="newsItem.summary" class="text-gray-700 leading-relaxed">
-              {{ newsItem.summary }}
-            </p>
-
             <p class="text-gray-800 leading-relaxed whitespace-pre-line">
               {{ newsItem.content }}
             </p>

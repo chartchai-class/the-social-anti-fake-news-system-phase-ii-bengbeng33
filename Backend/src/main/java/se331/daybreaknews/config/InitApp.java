@@ -48,7 +48,7 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .username("System Admin")
                 .email("admin@dbn.com")
                 .passwordHash(passwordEncoder.encode("admin123"))
-                .profileImagePath("profile-images/system-admin.png")
+                .profileImagePath("https://gdvmhaboyscqbpiwggrn.supabase.co/storage/v1/object/public/images/profile-images/20251031202658874-admin profile.png")
                 .build();
         admin.getRoles().addAll(Set.of(UserRole.READER, UserRole.MEMBER, UserRole.ADMIN));
 
